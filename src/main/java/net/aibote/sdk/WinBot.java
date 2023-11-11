@@ -1,21 +1,22 @@
-package net.aibote.utils;
+package net.aibote.sdk;
 
 import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
-import net.aibote.utils.dto.OCRResult;
-import net.aibote.utils.options.Mode;
-import net.aibote.utils.dto.Point;
-import net.aibote.utils.options.Region;
-import net.aibote.utils.options.SubColor;
+import net.aibote.sdk.dto.OCRResult;
+import net.aibote.sdk.dto.Point;
+import net.aibote.sdk.options.Mode;
+import net.aibote.sdk.options.Region;
+import net.aibote.sdk.options.SubColor;
+import net.aibote.utils.HttpClientUtils;
+import net.aibote.utils.ImageBase64Converter;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Stream;
 
 @Data
@@ -64,6 +65,7 @@ public abstract class WinBot extends AiBot {
                 winBot.setClientCocket(socket);
                 // 处理客户端请求
                 //poolExecutor.execute(webBot);
+                ChannelMap.getChannelMap().put(String.valueOf(socket.getInetAddress()), socket);
                 new Thread(winBot).start();
             }
         } catch (Exception ignored) {
@@ -237,8 +239,8 @@ public abstract class WinBot extends AiBot {
      * @param elementHwnd 元素句柄
      * @return boolean 总是返回true。
      */
-    public boolean clickMouse(String hwnd, int x, int y, int mouseType, int mode, String elementHwnd) {
-        return booleanCmd("clickMouse", hwnd, Integer.toString(x), Integer.toString(y), Integer.toString(mouseType), Integer.toString(mode), elementHwnd);
+    public boolean clickMouse(String hwnd, int x, int y, int mouseType, Mode mode, String elementHwnd) {
+        return booleanCmd("clickMouse", hwnd, Integer.toString(x), Integer.toString(y), Integer.toString(mouseType), mode.boolValueStr(), elementHwnd);
     }
 
     /**
@@ -953,6 +955,338 @@ public abstract class WinBot extends AiBot {
      */
     public boolean removeExcelRow(JSONObject sheetObject, int rowFirst, int rowLast) {
         return booleanCmd("removeExcelRow", sheetObject.toJSONString(), Integer.toString(rowFirst), Integer.toString(rowLast));
+    }
+
+    /**
+     * 删除excel表格列
+     *
+     * @param sheetObject sheet对象
+     * @param rowFirst    起始列
+     * @param rowLast     结束列
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean removeExcelCol(JSONObject sheetObject, int rowFirst, int rowLast) {
+        return booleanCmd("removeExcelCol", sheetObject.toJSONString(), Integer.toString(rowFirst), Integer.toString(rowLast));
+    }
+
+    /**
+     * 识别验证码
+     *
+     * @param filePath 图片文件路径
+     * @param username 用户名
+     * @param password 密码
+     * @param softId   软件ID
+     * @param codeType 图片类型 参考https://www.chaojiying.com/price.html
+     * @param lenMin   最小位数 默认0为不启用,图片类型为可变位长时可启用这个参数
+     * @return {Promise.<{err_no:number, err_str:string, pic_id:string, pic_str:string, md5:string}>} 返回JSON
+     * err_no,(数值) 返回代码  为0 表示正常，错误代码 参考https://www.chaojiying.com/api-23.html
+     * err_str,(字符串) 中文描述的返回信息
+     * pic_id,(字符串) 图片标识号，或图片id号
+     * pic_str,(字符串) 识别出的结果
+     * md5,(字符串) md5校验值,用来校验此条数据返回是否真实有效
+     */
+    public JSONObject getCaptcha(String filePath, String username, String password, String softId, String codeType, String lenMin) throws Exception {
+        if (StringUtils.isBlank(lenMin)) {
+            lenMin = "0";
+        }
+
+        String file_base64 = ImageBase64Converter.convertFileToBase64(filePath);
+
+        String url = "http://upload.chaojiying.net/Upload/Processing.php";
+        JSONObject dataJsonObject = new JSONObject();
+        dataJsonObject.put("user", username);
+        dataJsonObject.put("pass", password);
+        dataJsonObject.put("softid", softId);
+        dataJsonObject.put("codetype", codeType);
+        dataJsonObject.put("len_min", lenMin);
+        dataJsonObject.put("file_base64", file_base64);
+
+        JSONObject paramJsonObject = new JSONObject();
+        paramJsonObject.put("multipart", true);
+        paramJsonObject.put("data", dataJsonObject);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0");
+        headers.put("Content-Type", "application/x-www-form-urlencoded");
+
+        String retStr = HttpClientUtils.doPost(url, paramJsonObject.toJSONString(), headers);
+        return JSONObject.parseObject(retStr);
+
+    }
+
+    /**
+     * 识别报错返分
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @param softId   软件ID
+     * @param picId    图片ID 对应 getCaptcha返回值的pic_id 字段
+     * @return {Promise.<{err_no:number, err_str:string}>} 返回JSON
+     * err_no,(数值) 返回代码
+     * err_str,(字符串) 中文描述的返回信息
+     */
+    public JSONObject errorCaptcha(String username, String password, String softId, String picId) throws Exception {
+
+        String url = "http://upload.chaojiying.net/Upload/ReportError.php";
+        JSONObject dataJsonObject = new JSONObject();
+        dataJsonObject.put("user", username);
+        dataJsonObject.put("pass", password);
+        dataJsonObject.put("softid", softId);
+        dataJsonObject.put("id", picId);
+
+        JSONObject paramJsonObject = new JSONObject();
+        paramJsonObject.put("multipart", true);
+        paramJsonObject.put("data", dataJsonObject);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0");
+        headers.put("Content-Type", "application/x-www-form-urlencoded");
+
+        String retStr = HttpClientUtils.doPost(url, paramJsonObject.toJSONString(), headers);
+        return JSONObject.parseObject(retStr);
+    }
+
+    /**
+     * 查询验证码剩余题分
+     *
+     * @param username 用户名
+     * @param password 密码
+     * @return {Promise.<{err_no:number, err_str:string, tifen:string, tifen_lock:string}>} 返回JSON
+     * err_no,(数值) 返回代码
+     * err_str,(字符串) 中文描述的返回信息
+     * tifen,(数值) 题分
+     * tifen_lock,(数值) 锁定题分
+     */
+    public JSONObject scoreCaptcha(String username, String password) throws Exception {
+
+        String url = "http://upload.chaojiying.net/Upload/GetScore.php";
+        JSONObject dataJsonObject = new JSONObject();
+        dataJsonObject.put("user", username);
+        dataJsonObject.put("pass", password);
+
+        JSONObject paramJsonObject = new JSONObject();
+        paramJsonObject.put("multipart", true);
+        paramJsonObject.put("data", dataJsonObject);
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.8; rv:24.0) Gecko/20100101 Firefox/24.0");
+        headers.put("Content-Type", "application/x-www-form-urlencoded");
+
+        String retStr = HttpClientUtils.doPost(url, paramJsonObject.toJSONString(), headers);
+        return JSONObject.parseObject(retStr);
+    }
+
+    /**
+     * 初始化语音服务(不支持win7)
+     *
+     * @param speechKey,    微软语音API密钥
+     * @param speechRegion, 区域
+     * @return {Promise.<boolean>} 成功返回true 失败返回false
+     */
+    public boolean removeExcelCol(String speechKey, String speechRegion) {
+        return booleanCmd("initSpeechService", speechKey, speechRegion);
+    }
+
+    /**
+     * 音频文件转文本
+     *
+     * @param filePath, 音频文件路径
+     * @param language, 语言，参考开发文档 语言和发音人
+     * @return {Promise.<string || null>} 成功返回转换后的音频文本，失败返回null
+     */
+    public String audioFileToText(String filePath, String language) {
+        return strCmd("audioFileToText", filePath, language);
+    }
+
+    /**
+     * 麦克风输入流转换文本
+     *
+     * @param language, 语言，参考开发文档 语言和发音人
+     * @return {Promise.<string || null>} 成功返回转换后的音频文本，失败返回null
+     */
+    public String microphoneToText(String language) {
+        return strCmd("microphoneToText", language);
+    }
+
+    /**
+     * 文本合成音频到扬声器
+     *
+     * @param ssmlPathOrText，要转换语音的文本或者".xml"格式文件路径
+     * @param language，语言，参考开发文档                    语言和发音人
+     * @param voiceName，发音人，参考开发文档                  语言和发音人
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean textToBullhorn(String ssmlPathOrText, String language, String voiceName) {
+        return booleanCmd("textToBullhorn", ssmlPathOrText, language, voiceName);
+    }
+
+    /**
+     * 文本合成音频并保存到文件
+     *
+     * @param ssmlPathOrText，要转换语音的文本或者".xml"格式文件路径
+     * @param language，语言，参考开发文档                    语言和发音人
+     * @param voiceName，发音人，参考开发文档                  语言和发音人
+     * @param audioPath，保存音频文件路径
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean textToAudioFile(String ssmlPathOrText, String language, String voiceName, String audioPath) {
+        return booleanCmd("textToAudioFile", ssmlPathOrText, language, voiceName);
+    }
+
+    /**
+     * 麦克风音频翻译成目标语言文本
+     *
+     * @param sourceLanguage，要翻译的语言，参考开发文档 语言和发音人
+     * @param targetLanguage，翻译后的语言，参考开发文档 语言和发音人
+     * @return {Promise.<string || null>} 成功返回翻译后的语言文本，失败返回null
+     */
+    public String microphoneTranslationText(String sourceLanguage, String targetLanguage) {
+        return strCmd("microphoneTranslationText", sourceLanguage, targetLanguage);
+    }
+
+    /**
+     * 音频文件翻译成目标语言文本
+     *
+     * @param audioPath，                   要翻译的音频文件路径
+     * @param sourceLanguage，要翻译的语言，参考开发文档 语言和发音人
+     * @param targetLanguage，翻译后的语言，参考开发文档 语言和发音人
+     * @return {Promise.<string || null>}成功返回翻译后的语言文本，失败返回null
+     */
+    public String audioFileTranslationText(String audioPath, String sourceLanguage, String targetLanguage) {
+        return strCmd("audioFileTranslationText", audioPath, sourceLanguage, targetLanguage);
+    }
+
+    /**
+     * 初始化数字人，第一次初始化需要一些时间
+     *
+     * @param metahumanModePath,   数字人模型路径
+     * @param metahumanScaleValue, 数字人缩放倍数，1为原始大小。为0.5时放大一倍，2则缩小一半
+     * @param isUpdateMetahuman,   是否强制更新，默认fasle。为true时强制更新会拖慢初始化速度
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean initMetahuman(String metahumanModePath, float metahumanScaleValue, boolean isUpdateMetahuman) {
+        return booleanCmd("initMetahuman", metahumanModePath, Float.toString(metahumanScaleValue), Boolean.toString(isUpdateMetahuman));
+    }
+
+    /**
+     * 数字人说话，此函数需要调用 initSpeechService 初始化语音服务
+     *
+     * @param saveVoiceFolder, 保存的发音文件目录，文件名以0开始依次增加，扩展为.wav格式
+     * @param text             要转换语音的文本
+     * @param language         语言，参考开发文档                       语言和发音人
+     * @param voiceName        发音人，参考开发文档                     语言和发音人
+     * @param quality          音质，0低品质                          1中品质  2高品质， 默认为0低品质
+     * @param waitPlaySound    等待音频播报完毕，true等待/false不等待
+     * @param speechRate       语速，默认为0，取值范围 -100 至 200
+     * @param voiceStyle       语音风格，默认General常规风格，其他风格参考开发文档 语言和发音人
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean metahumanSpeech(String saveVoiceFolder, String text, String language, String voiceName, int quality, boolean waitPlaySound, int speechRate, String voiceStyle) {
+        if (StringUtils.isBlank(voiceStyle)) {
+            voiceStyle = "General";
+        }
+        return this.booleanCmd("metahumanSpeech", saveVoiceFolder, text, language, voiceName, Integer.toString(quality), Boolean.toString(waitPlaySound), Integer.toString(speechRate), voiceStyle);
+    }
+
+    /**
+     * 数字人说话缓存模式，需要调用 initSpeechService 初始化语音服务。函数一般用于常用的话术播报，非常用话术切勿使用，否则内存泄漏
+     *
+     * @param saveVoiceFolder 保存的发音文件目录，文件名以0开始依次增加，扩展为.wav格式
+     * @param text            要转换语音的文本
+     * @param language        语言，参考开发文档                       语言和发音人
+     * @param voiceName       发音人，参考开发文档                     语言和发音人
+     * @param quality         音质，0低品质                          1中品质  2高品质， 默认为0低品质
+     * @param waitPlaySound   等待音频播报完毕，true等待/false不等待
+     * @param speechRate      语速，默认为0，取值范围 -100 至 200
+     * @param voiceStyle      语音风格，默认General常规风格，其他风格参考开发文档 语言和发音人
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean metahumanSpeechCache(String saveVoiceFolder, String text, String language, String voiceName, int quality, boolean waitPlaySound, int speechRate, String voiceStyle) {
+        if (StringUtils.isBlank(voiceStyle)) {
+            voiceStyle = "General";
+        }
+        return this.booleanCmd("metahumanSpeechCache", saveVoiceFolder, text, language, voiceName, Integer.toString(quality), Boolean.toString(waitPlaySound), Integer.toString(speechRate), voiceStyle);
+    }
+
+
+    /**
+     * 数字人插入视频
+     *
+     * @param videoFilePath  插入的视频文件路径
+     * @param audioFilePath  插入的视频文件路径
+     * @param audioFilePath, 插入的音频文件路径
+     * @param waitPlayVideo  等待视频播放完毕,true等待/false不等待
+     * @return
+     */
+    public boolean metahumanInsertVideo(String videoFilePath, String audioFilePath, boolean waitPlayVideo) {
+        return booleanCmd("metahumanInsertVideo", videoFilePath, audioFilePath, Boolean.toString(waitPlayVideo));
+    }
+
+    /**
+     * 替换数字人背景
+     *
+     * @param bgFilePath   数字人背景 图片/视频 路径。仅替换绿幕背景的数字人模型
+     * @param replaceRed   数字人背景的三通道之一的 R通道色值。默认-1 自动提取
+     * @param replaceGreen 数字人背景的三通道之一的 G通道色值。默认-1 自动提取
+     * @param replaceBlue  数字人背景的三通道之一的 B通道色值。默认-1 自动提取
+     * @param simValue     相似度。 默认为0，此处参数用作微调RBG值。取值应当大于等于0
+     * @return {Promise.<boolean>} 总是返回true。此函数依赖 initMetahuman函数运行，否则程序会崩溃
+     */
+    public boolean replaceBackground(String bgFilePath, int replaceRed, int replaceGreen, int replaceBlue, int simValue) {
+        return booleanCmd("replaceBackground", bgFilePath, Integer.toString(replaceRed), Integer.toString(replaceGreen), Integer.toString(replaceBlue), Integer.toString(simValue));
+    }
+
+    /**
+     * 显示数字人说话的文本
+     *
+     * @param originY   第一个字显示的起始Y坐标点。 默认0 自适应高度
+     * @param fontType  字体样式，支持操作系统已安装的字体。例如"Arial"、"微软雅黑"、"楷体"
+     * @param fontSize  字体的大小。默认30
+     * @param fontRed   字体颜色三通道之一的 R通道色值。默认可填入 128
+     * @param fontGreen 字体颜色三通道之一的 G通道色值。默认可填入 255
+     * @param fontBlue  字体颜色三通道之一的 B通道色值。默认可填入 0
+     * @param italic    是否斜体,默认false
+     * @param underline 是否有下划线,默认false
+     * @return {Promise.<boolean>} 总是返回true。此函数依赖 initMetahuman函数运行，否则程序会崩溃
+     */
+    public boolean showSpeechText(int originY, String fontType, int fontSize, int fontRed, int fontGreen, int fontBlue, boolean italic, boolean underline) {
+        return booleanCmd("showSpeechText", Integer.toString(originY), fontType, Integer.toString(fontSize), Integer.toString(fontRed), Integer.toString(fontGreen), Integer.toString(fontBlue), Boolean.toString(italic), Boolean.toString(underline));
+    }
+
+    /**
+     * 生成数字人短视频，此函数需要调用 initSpeechService 初始化语音服务
+     *
+     * @param saveVideoFolder, 保存的视频目录
+     * @param text             要转换语音的文本
+     * @param language         语言，参考开发文档 语言和发音人
+     * @param voiceName        发音人，参考开发文档 语言和发音人
+     * @param bgFilePath       数字人背景 图片/视频 路径，扣除绿幕会自动获取绿幕的RGB值，null 则不替换背景。仅替换绿幕背景的数字人模型
+     * @param simValue         相似度，默认为0。此处参数用作绿幕扣除微调RBG值。取值应当大于等于0
+     * @param voiceStyle       语音风格，默认General常规风格，其他风格参考开发文档 语言和发音人
+     * @param quality          音质，0低品质  1中品质  2高品质， 默认为0低品质
+     * @param speechRate       语速，默认为0，取值范围 -100 至 200
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean showSpeechText(String saveVideoFolder, String text, String language, String voiceName, String bgFilePath, int simValue, String voiceStyle, int quality, int speechRate) {
+        return booleanCmd("showSpeechText", saveVideoFolder, text, language, voiceName, bgFilePath, Integer.toString(simValue), voiceStyle, Integer.toString(quality), Integer.toString(speechRate));
+    }
+
+    /**
+     * 获取WindowsDriver.exe 命令扩展参数，一般用作脚本远程部署场景，WindowsDriver.exe驱动程序传递参数给脚本服务端
+     *
+     * @return {Promise.<string>} 返回WindowsDriver驱动程序的命令行参数(不包含ip和port)
+     */
+    public String getExtendParam() {
+        return strCmd("getExtendParam");
+    }
+
+    /**
+     * 关闭驱动
+     *
+     * @return boolean
+     */
+    public boolean closeDriver() {
+        return booleanCmd("closeDriver");
     }
 
 }

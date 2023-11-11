@@ -1,4 +1,4 @@
-package net.aibote.utils;
+package net.aibote.sdk;
 
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;

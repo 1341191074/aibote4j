@@ -1,4 +1,4 @@
-import net.aibote.utils.WebBot;
+import net.aibote.sdk.WebBot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

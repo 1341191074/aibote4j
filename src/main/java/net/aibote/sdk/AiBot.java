@@ -1,4 +1,4 @@
-package net.aibote.utils;
+package net.aibote.sdk;
 
 import lombok.Data;
 import org.slf4j.Logger;
@@ -72,12 +72,11 @@ public abstract class AiBot implements Runnable {
     /**
      * 发送协议到driver
      *
-     * @param arrArgs
+     * @param strData
      * @return
      */
-    protected synchronized String sendData(String... arrArgs) {
+    protected synchronized String sendData(String strData) {
         try {
-            String strData = setSendData(arrArgs);
             log.info("发送命令：" + strData);
             this.clientCocket.getOutputStream().write(strData.getBytes(StandardCharsets.UTF_8));
             this.clientCocket.getOutputStream().flush();
@@ -105,7 +104,8 @@ public abstract class AiBot implements Runnable {
     }
 
     protected boolean booleanCmd(String... arrArgs) {
-        return "true".equals(this.sendData(arrArgs));
+        String strData = this.setSendData(arrArgs);
+        return "true".equals(this.sendData(strData));
     }
 
     protected boolean booleanDelayCmd(String... arrArgs) {
@@ -127,7 +127,8 @@ public abstract class AiBot implements Runnable {
     }
 
     protected String strCmd(String... arrArgs) {
-        return this.sendData(arrArgs);
+        String strData = this.setSendData(arrArgs);
+        return this.sendData(strData);
     }
 
     protected String strDelayCmd(String... arrArgs) {

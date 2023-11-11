@@ -1,6 +1,6 @@
 import com.alibaba.fastjson2.JSONArray;
-import net.aibote.utils.dto.OCRResult;
-import net.aibote.utils.dto.Point;
+import net.aibote.sdk.dto.OCRResult;
+import net.aibote.sdk.dto.Point;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package net.aibote.utils.options;
+package net.aibote.sdk.options;
 
 import lombok.AllArgsConstructor;
 

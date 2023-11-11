@@ -1,4 +1,4 @@
-package net.aibote.utils;
+package net.aibote.sdk;
 
 
 import java.net.Socket;

@@ -1,4 +1,4 @@
-package net.aibote.utils.dto;
+package net.aibote.sdk.dto;
 
 public class OCRResult {
     public Point lt;
