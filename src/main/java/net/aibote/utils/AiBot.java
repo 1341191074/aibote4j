@@ -108,8 +108,44 @@ public abstract class AiBot implements Runnable {
         return "true".equals(this.sendData(arrArgs));
     }
 
+    protected boolean booleanDelayCmd(String... arrArgs) {
+        String strData = this.setSendData(arrArgs);
+        String retStr;
+        long startTime = System.currentTimeMillis();
+        long endTime;
+        do {
+            retStr = this.sendData(strData);
+            if (null == retStr || "false".equals(retStr)) {
+                this.sleep(this.intervalTimeout);
+            } else {
+                break;
+            }
+            endTime = System.currentTimeMillis();
+        } while (endTime - startTime <= this.waitTimeout);
+
+        return "true".equals(retStr);
+    }
+
     protected String strCmd(String... arrArgs) {
         return this.sendData(arrArgs);
+    }
+
+    protected String strDelayCmd(String... arrArgs) {
+        String strData = this.setSendData(arrArgs);
+        String retStr;
+        long startTime = System.currentTimeMillis();
+        long endTime;
+        do {
+            retStr = this.sendData(strData);
+            if (null == retStr || "-1|-1".equals(retStr) || "-1.0|-1.0".equals(retStr)) {
+                this.sleep(this.intervalTimeout);
+            } else {
+                break;
+            }
+            endTime = System.currentTimeMillis();
+        } while (endTime - startTime <= this.waitTimeout);
+
+        return retStr;
     }
 
 }

@@ -1,6 +1,8 @@
 package net.aibote.utils;
 
+import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 import net.aibote.utils.dto.OCRResult;
 import net.aibote.utils.options.Mode;
@@ -349,27 +351,10 @@ public abstract class WinBot extends AiBot {
 
         String strData = null;
         if (hwndOrBigImagePath.toString().indexOf(".") == -1) {//在窗口上找图
-            strData = setSendData("findImage", hwndOrBigImagePath, smallImagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi), mode.boolValueStr());
+            return strDelayCmd("findImage", hwndOrBigImagePath, smallImagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi), mode.boolValueStr());
         } else {//在文件上找图
-            strData = setSendData("findImageByFile", hwndOrBigImagePath, smallImagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi), mode.boolValueStr());
+            return this.strDelayCmd("findImageByFile", hwndOrBigImagePath, smallImagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi), mode.boolValueStr());
         }
-        String retStr = null;
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
-        do {
-            retStr = this.sendData(strData);
-            if ("-1|-1".equals(retStr)) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-//        if ("-1|-1".equals(retStr)) {
-//            return null;
-//        }
-        return retStr;
     }
 
     /**
@@ -381,25 +366,7 @@ public abstract class WinBot extends AiBot {
      * @return 成功返回 单坐标点[{x:number, y:number}]，多坐标点[{x1:number, y1:number}, {x2:number, y2:number}...] 失败返回null
      */
     public String findAnimation(String hwnd, int frameRate, Region region, Mode mode) {
-        String strData = setSendData("findAnimation", hwnd, Integer.toString(frameRate), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), mode.boolValueStr());
-
-        String retStr = null;
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
-        do {
-            retStr = this.sendData(strData);
-            if ("-1|-1".equals(retStr)) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-//        if ("-1|-1".equals(retStr)) {
-//            return null;
-//        }
-        return retStr;
+        return strDelayCmd("findAnimation", hwnd, Integer.toString(frameRate), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), mode.boolValueStr());
     }
 
     /**
@@ -428,22 +395,7 @@ public abstract class WinBot extends AiBot {
             }
         }
 
-        String strData = this.setSendData("findColor", hwnd, strMainColor, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
-        String retStr;
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
-        do {
-            retStr = this.sendData(strData);
-            if ("-1|-1".equals(retStr)) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-
-        return retStr;
+        return this.strDelayCmd("findColor", hwnd, strMainColor, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
     }
 
     /**
@@ -473,21 +425,7 @@ public abstract class WinBot extends AiBot {
                 }
             }
         }
-        String strData = this.setSendData("compareColor", hwnd, Integer.toString(mainX), Integer.toString(mainY), mainColorStr, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
-        String retStr;
-        long startTime = System.currentTimeMillis();
-        long endTime = System.currentTimeMillis();
-        do {
-            retStr = this.sendData(strData);
-            if ("false".equals(retStr)) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-        return "true".equals(retStr);
+        return this.booleanDelayCmd("compareColor", hwnd, Integer.toString(mainX), Integer.toString(mainY), mainColorStr, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
     }
 
     /**
@@ -720,22 +658,7 @@ public abstract class WinBot extends AiBot {
      * @return 成功返回元素名称
      */
     public String getElementName(String hwnd, String xpath) {
-        String strData = this.setSendData("getElementName", hwnd, xpath);
-        String retStr;
-        long startTime = System.currentTimeMillis();
-        long endTime;
-        do {
-            retStr = this.sendData(strData);
-            if (null == retStr) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-
-        return retStr;
+        return this.strDelayCmd("getElementName", hwnd, xpath);
     }
 
     /**
@@ -746,24 +669,290 @@ public abstract class WinBot extends AiBot {
      * @return 成功返回元素文本
      */
     public String getElementValue(String hwnd, String xpath) {
-        String strData = this.setSendData("getElementValue", hwnd, xpath);
-        String retStr;
-        long startTime = System.currentTimeMillis();
-        long endTime;
-        do {
-            retStr = this.sendData(strData);
-            if (null == retStr) {
-                super.sleep(this.intervalTimeout);
-            } else {
-                break;
-            }
-            endTime = System.currentTimeMillis();
-        } while (endTime - startTime <= this.waitTimeout);
-
-
-        return retStr;
+        return this.strDelayCmd("getElementValue", hwnd, xpath);
     }
 
+    /**
+     * 获取指定元素矩形大小
+     *
+     * @param hwnd  窗口句柄。如果是java窗口并且窗口句柄和元素句柄不一致，需要使用getElementWindow获取窗口句柄。
+     *                   * getElementWindow参数的xpath，Aibote Tool应当使用正常模式下获取的XPATH路径，不要 “勾选java窗口” 复选按钮。对话框子窗口，需要获取对应的窗口句柄操作
+     * @param xpath 元素路径
+     * @return Region
+     */
+    public Region getElementRect(String hwnd, String xpath) {
+        String retStr = this.strDelayCmd("getElementRect", hwnd, xpath);
 
+        if (null == retStr || retStr == "-1|-1|-1|-1") {
+            return null;
+        }
+
+        String[] arrRet = retStr.split("|");
+        Region region = new Region();
+        region.left = Integer.valueOf(arrRet[0]);
+        region.top = Integer.valueOf(arrRet[1]);
+        region.right = Integer.valueOf(arrRet[2]);
+        region.bottom = Integer.valueOf(arrRet[3]);
+        return region;
+    }
+
+    /**
+     * 获取元素窗口句柄
+     *
+     * @param hwnd  窗口句柄
+     * @param xpath 元素路径
+     * @return 成功返回元素窗口句柄，失败返回null
+     */
+    public String getElementWindow(String hwnd, String xpath) {
+        return this.strDelayCmd("getElementWindow", hwnd, xpath);
+    }
+
+    /**
+     * 点击元素
+     *
+     * @param hwnd  窗口句柄。如果是java窗口并且窗口句柄和元素句柄不一致，需要使用getElementWindow获取窗口句柄。
+     *              getElementWindow参数的xpath，Aibote Tool应当使用正常模式下获取的XPATH路径，不要 “勾选java窗口” 复选按钮。对话框子窗口，需要获取对应的窗口句柄操作
+     * @param xpath 元素路径
+     * @param opt   单击左键:1 单击右键:2 按下左键:3 弹起左键:4 按下右键:5 弹起右键:6 双击左键:7 双击右键:8
+     * @return {Promise.<boolean>} 成功返回true 失败返回 false
+     */
+    public boolean clickElement(String hwnd, String xpath, String opt) {
+        return this.booleanDelayCmd("clickElement", hwnd, xpath, opt);
+    }
+
+    /**
+     * 执行元素默认操作(一般是点击操作)
+     *
+     * @param {string|number} hwnd  窗口句柄。
+     * @param {string}        xpath 元素路径
+     * @return {Promise.<boolean>} 成功返回true 失败返回 false
+     */
+    public boolean invokeElement(String hwnd, String xpath) {
+        return this.booleanDelayCmd("invokeElement", hwnd, xpath);
+    }
+
+    /**
+     * 设置指定元素作为焦点
+     *
+     * @param {string|number} hwnd  窗口句柄
+     * @param {string}        xpath 元素路径
+     * @return {Promise.<boolean>} 成功返回true 失败返回 false
+     */
+    public boolean setElementFocus(String hwnd, String xpath) {
+        return this.booleanDelayCmd("setElementFocus", hwnd, xpath);
+    }
+
+    /**
+     * 设置元素文本
+     *
+     * @param hwnd  窗口句柄。如果是java窗口并且窗口句柄和元素句柄不一致，需要使用getElementWindow获取窗口句柄。
+     *              getElementWindow参数的xpath，Aibote Tool应当使用正常模式下获取的XPATH路径，不要 “勾选java窗口” 复选按钮。对话框子窗口，需要获取对应的窗口句柄操作
+     * @param xpath 元素路径
+     * @param value 要设置的内容
+     * @return {Promise.<boolean>} 成功返回true 失败返回 false
+     */
+    public boolean setElementValue(String hwnd, String xpath, String value) {
+        return this.booleanDelayCmd("setElementValue", hwnd, xpath, value);
+    }
+
+    /**
+     * 滚动元素
+     *
+     * @param hwnd              窗口句柄
+     * @param xpath             元素路径
+     * @param horizontalPercent 水平百分比 -1不滚动
+     * @param verticalPercent   垂直百分比 -1不滚动
+     * @return 成功返回true 失败返回 false
+     */
+    public boolean setElementScroll(String hwnd, String xpath, float horizontalPercent, float verticalPercent) {
+        return this.booleanDelayCmd("setElementScroll", hwnd, xpath, Float.toString(horizontalPercent), Float.toString(verticalPercent));
+    }
+
+    /**
+     * 单/复选框是否选中
+     *
+     * @param hwnd  窗口句柄
+     * @param xpath 元素路径
+     * @return 成功返回true 失败返回 false
+     */
+    public boolean isSelected(String hwnd, String xpath) {
+        String strRet = this.strDelayCmd("isSelected", hwnd, xpath);
+        if ("selected".equals(strRet)) return true;
+        else return false;
+    }
+
+    /**
+     * 关闭窗口
+     *
+     * @param hwnd  窗口句柄
+     * @param xpath 元素路径
+     * @return 成功返回true 失败返回 false
+     */
+    public boolean closeWindow(String hwnd, String xpath) {
+        return booleanCmd("closeWindow", hwnd, xpath);
+    }
+
+    /**
+     * 设置窗口状态
+     *
+     * @param hwnd  hwnd  窗口句柄。如果是java窗口并且窗口句柄和元素句柄不一致，需要使用getElementWindow获取窗口句柄。
+     *              getElementWindow参数的xpath，Aibote Tool应当使用正常模式下获取的XPATH路径，不要 “勾选java窗口” 复选按钮。对话框子窗口，需要获取对应的窗口句柄操作
+     * @param xpath 元素路径
+     * @param state 0正常 1最大化 2 最小化
+     * @return boolean
+     */
+    public boolean setWindowState(String hwnd, String xpath, int state) {
+        return booleanCmd("setWindowState", hwnd, xpath, Integer.toString(state));
+    }
+
+    /**
+     * 设置剪贴板
+     *
+     * @param text 文字内容
+     * @return boolean
+     */
+    public boolean setClipboardText(String text) {
+        return booleanCmd("setClipboardText", text);
+    }
+
+    /**
+     * 获取剪贴板内容
+     *
+     * @return
+     */
+    public String getClipboardText() {
+        return strCmd("getClipboardText");
+    }
+
+    /**
+     * 启动指定程序
+     *
+     * @param commandLine 启动命令行
+     * @param showWindow  是否显示窗口。可选参数,默认显示窗口
+     * @param isWait      是否等待程序结束。可选参数,默认不等待
+     * @return {Promise.<boolean>} 成功返回true,失败返回false
+     */
+    public boolean startProcess(String commandLine, boolean showWindow, boolean isWait) {
+        return booleanCmd("startProcess", commandLine, Boolean.toString(showWindow), Boolean.toString(isWait));
+    }
+
+    /**
+     * 执行cmd命令
+     *
+     * @param command     cmd命令，不能含 "cmd"字串
+     * @param waitTimeout 可选参数，等待结果返回超时，单位毫秒，默认300毫秒
+     * @return {Promise.<string>} 返回cmd执行结果
+     */
+    public String executeCommand(String command, int waitTimeout) {
+        return strCmd("executeCommand", command, Integer.toString(waitTimeout));
+    }
+
+    /**
+     * 指定url下载文件
+     *
+     * @param url      文件地址
+     * @param filePath 文件保存的路径
+     * @param isWait   是否等待.为true时,等待下载完成
+     * @return {Promise.<boolean>} 总是返回true
+     */
+    public boolean downloadFile(String url, String filePath, boolean isWait) {
+        return booleanCmd("downloadFile", url, filePath, Boolean.toString(isWait));
+    }
+
+    /**
+     * 打开excel文档
+     *
+     * @param excelPath excle路径
+     * @return {Promise.<Object>} 成功返回excel对象，失败返回null
+     */
+    public JSONObject openExcel(String excelPath) {
+        String strRet = strCmd("openExcel", excelPath);
+        return JSON.parseObject(strRet);
+    }
+
+    /**
+     * 打开excel表格
+     *
+     * @param excelObject excel对象
+     * @param sheetName   表名
+     * @return {Promise.<Object>} 成功返回sheet对象，失败返回null
+     */
+    public JSONObject openExcelSheet(JSONObject excelObject, String sheetName) {
+        String strRet = strCmd("openExcelSheet", excelObject.getString("book"), excelObject.getString("path"), sheetName);
+        return JSON.parseObject(strRet);
+    }
+
+    /**
+     * 保存excel文档
+     *
+     * @param excelObject excel对象
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean saveExcel(JSONObject excelObject) {
+        return booleanCmd("saveExcel", excelObject.getString("book"), excelObject.getString("path"));
+    }
+
+    /**
+     * 写入数字到excel表格
+     *
+     * @param sheetObject sheet对象
+     * @param row         行
+     * @param col         列
+     * @param value       写入的值
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean writeExcelNum(JSONObject sheetObject, int row, int col, int value) {
+        return booleanCmd("writeExcelNum", sheetObject.toJSONString(), Integer.toString(row), Integer.toString(col), Integer.toString(value));
+    }
+
+    /**
+     * 写入字符串到excel表格
+     *
+     * @param sheetObject sheet对象
+     * @param row         行
+     * @param col         列
+     * @param strValue    写入的值
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean writeExcelStr(JSONObject sheetObject, int row, int col, String strValue) {
+        return booleanCmd("writeExcelStr", sheetObject.toJSONString(), Integer.toString(row), Integer.toString(col), strValue);
+    }
+
+    /**
+     * 读取excel表格数字
+     *
+     * @param sheetObject sheet对象
+     * @param row         行
+     * @param col         列
+     * @return {Promise.<number>} 返回读取到的数字
+     */
+    public Float readExcelNum(JSONObject sheetObject, int row, int col) {
+        String strRet = strCmd("readExcelNum", sheetObject.toJSONString(), Integer.toString(row), Integer.toString(col));
+        return Float.valueOf(strRet);
+    }
+
+    /**
+     * 读取excel表格数字
+     *
+     * @param sheetObject sheet对象
+     * @param row         行
+     * @param col         列
+     * @return {Promise.<number>} 返回读取到的数字
+     */
+    public String readExcelStr(JSONObject sheetObject, int row, int col) {
+        return strCmd("readExcelStr", sheetObject.toJSONString(), Integer.toString(row), Integer.toString(col));
+    }
+
+    /**
+     * 删除excel表格行
+     *
+     * @param sheetObject sheet对象
+     * @param rowFirst    起始行
+     * @param rowLast     结束行
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean removeExcelRow(JSONObject sheetObject, int rowFirst, int rowLast) {
+        return booleanCmd("removeExcelRow", sheetObject.toJSONString(), Integer.toString(rowFirst), Integer.toString(rowLast));
+    }
 
 }
