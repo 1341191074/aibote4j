@@ -4,9 +4,9 @@ import lombok.Data;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
@@ -76,31 +76,51 @@ public abstract class AiBot implements Runnable {
      * @return
      */
     protected synchronized String sendData(String strData) {
+        byte[] bytes = this.sendDataForBytes(strData);
+        if (null == bytes) {
+            return null;
+        }
+        return new String(bytes);
+    }
+
+    protected synchronized byte[] sendDataForBytes(String strData) {
         try {
             log.info("发送命令：" + strData);
+
             this.clientCocket.getOutputStream().write(strData.getBytes(StandardCharsets.UTF_8));
             this.clientCocket.getOutputStream().flush();
-            InputStream inputStream = clientCocket.getInputStream();
-            InputStreamReader reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
 
-            char[] buffer = new char[1024];
-            int length = reader.read(buffer);
-            String message = new String(buffer, 0, length);
-            String[] ary = message.split("/", 2);
-            int dataLen = Integer.valueOf(ary[0]);
-            StringBuilder data = new StringBuilder(ary[1]);
-            while (dataLen > data.toString().getBytes().length) {//如果包长度大于缓冲区，则继续读取。
-                length = reader.read(buffer);
-                message = new String(buffer, 0, length);
-                data.append(message);
+            InputStream inputStream = clientCocket.getInputStream();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            int readData = -1;
+            while ((readData = inputStream.read()) != -1) {
+                // 读取包结构，数据采用/分割。 返回数据格式为: dataLength/bytes
+                if (readData != 47) { // 47为结构中的/
+                    byteArrayOutputStream.write(readData);
+                } else {
+                    break; //读到分割符后跳出
+                }
             }
-            if ("null".contentEquals(data)) {
-                return null;
+            int dataLen = Integer.parseInt(byteArrayOutputStream.toString());
+            byteArrayOutputStream.reset();//重置
+
+            byte[] bytes = new byte[1024];
+            int readLine = inputStream.read(bytes);
+            byteArrayOutputStream.write(bytes, 0, readLine);//写入真实数据。根据实际读入长度写入数据。最大写入1024字节。
+            while (dataLen > byteArrayOutputStream.toByteArray().length) {//如果包长度大于真实数据，则继续读取。
+                readLine = inputStream.read(bytes);
+                byteArrayOutputStream.write(bytes, 0, readLine);
             }
-            return data.toString();
+
+            return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    protected byte[] bytesCmd(String... arrArgs) {
+        String strData = this.setSendData(arrArgs);
+        return this.sendDataForBytes(strData);
     }
 
     protected boolean booleanCmd(String... arrArgs) {
@@ -128,7 +148,11 @@ public abstract class AiBot implements Runnable {
 
     protected String strCmd(String... arrArgs) {
         String strData = this.setSendData(arrArgs);
-        return this.sendData(strData);
+        strData = this.sendData(strData);
+        if ("null".contentEquals(strData)) {
+            return null;
+        }
+        return strData;
     }
 
     protected String strDelayCmd(String... arrArgs) {
@@ -138,7 +162,7 @@ public abstract class AiBot implements Runnable {
         long endTime;
         do {
             retStr = this.sendData(strData);
-            if (null == retStr || "-1|-1".equals(retStr) || "-1.0|-1.0".equals(retStr)) {
+            if ("null".equals(retStr) || null == retStr || "-1|-1".equals(retStr) || "-1.0|-1.0".equals(retStr)) {
                 this.sleep(this.intervalTimeout);
             } else {
                 break;

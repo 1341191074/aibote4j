@@ -1,17 +1,14 @@
 import net.aibote.sdk.WebBot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class WebBotTest extends WebBot {
-    private static final Logger log = LoggerFactory.getLogger(WebBotTest.class);
 
     public static void main(String[] args) {
-//        Map<String, String> options = new HashMap<>();
-//        options.put("debugPort", "9223");
-//        WebBot.startServer(WebBotTest.class, "127.0.0.1", 19028, options);
-
-        //WebBot.startServer(test, "E:\\aibote\\Aibote\\");
-
+        Map<String, String> options = new HashMap<>();
+        options.put("debugPort", "9223");
+        WebBot.startServer(WebBotTest.class, "127.0.0.1", 19028, options);
     }
 
     //模拟远程启动

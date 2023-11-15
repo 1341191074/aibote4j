@@ -4,6 +4,7 @@ import com.alibaba.fastjson2.JSON;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import net.aibote.sdk.dto.OCRResult;
 import net.aibote.sdk.dto.Point;
 import net.aibote.sdk.options.Mode;
@@ -19,6 +20,7 @@ import java.net.Socket;
 import java.util.*;
 import java.util.stream.Stream;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class WinBot extends AiBot {
     private String serverIp = "127.0.0.1"; //默认本机
@@ -388,8 +390,8 @@ public abstract class WinBot extends AiBot {
             SubColor subColor;
             for (int i = 0; i < subColors.length; i++) {
                 subColor = subColors[i];
-                subColorsStr.append(subColor.offsetX).append("\n");
-                subColorsStr.append(subColor.offsetY).append("\n");
+                subColorsStr.append(subColor.offsetX).append("/");
+                subColorsStr.append(subColor.offsetY).append("/");
                 subColorsStr.append(subColor.colorStr);
                 if (i < subColors.length - 1) { //最后不需要\n
                     subColorsStr.append("\n");
@@ -419,8 +421,8 @@ public abstract class WinBot extends AiBot {
             SubColor subColor;
             for (int i = 0; i < subColors.length; i++) {
                 subColor = subColors[i];
-                subColorsStr.append(subColor.offsetX).append("\n");
-                subColorsStr.append(subColor.offsetY).append("\n");
+                subColorsStr.append(subColor.offsetX).append("/");
+                subColorsStr.append(subColor.offsetY).append("/");
                 subColorsStr.append(subColor.colorStr);
                 if (i < subColors.length - 1) { //最后不需要\n
                     subColorsStr.append("\n");
