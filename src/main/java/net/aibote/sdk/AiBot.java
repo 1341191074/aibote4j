@@ -84,10 +84,33 @@ public abstract class AiBot implements Runnable {
     }
 
     protected synchronized byte[] sendDataForBytes(String strData) {
-        try {
-            log.info("发送命令：" + strData);
+        log.info("发送命令：" + strData);
+        return sendBytes(strData.getBytes(StandardCharsets.UTF_8));
+    }
 
-            this.clientCocket.getOutputStream().write(strData.getBytes(StandardCharsets.UTF_8));
+    protected synchronized boolean sendFile(String functionName, String androidFilePath, byte[] fileData) {
+        StringBuilder strData = new StringBuilder();
+        strData.append(functionName.getBytes().length).append("/");
+        strData.append(androidFilePath.getBytes().length).append("/");
+        strData.append(fileData.length).append("/");
+        strData.append(functionName);
+        strData.append(androidFilePath);
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        try {
+            byteArrayOutputStream.write(strData.toString().getBytes(StandardCharsets.UTF_8));
+            byteArrayOutputStream.write(fileData);
+            byte[] bytes = this.sendBytes(byteArrayOutputStream.toByteArray());
+            return "true".equals(new String(bytes));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
+    private byte[] sendBytes(byte[] inputBytes) {
+        try {
+            this.clientCocket.getOutputStream().write(inputBytes);
             this.clientCocket.getOutputStream().flush();
 
             InputStream inputStream = clientCocket.getInputStream();

@@ -735,16 +735,13 @@ public abstract class AndroidBot extends AiBot {
     public boolean elementIsVisible(String xpath) {
         String windowRect = this.getWindowSize();
         Region elementRect = this.getElementRect(xpath);
-        if (elementRect == null)
-            return false;
+        if (elementRect == null) return false;
 
         String[] split = windowRect.split("\\|");
         int elementWidth = elementRect.right - elementRect.left;
         int elementHeight = elementRect.bottom - elementRect.top;
-        if (elementRect.top < 0 || elementRect.left < 0 || elementWidth > Integer.parseInt(split[0]) || elementHeight > Integer.parseInt(split[1]))
-            return false;
-        else
-            return true;
+        if (elementRect.top < 0 || elementRect.left < 0 || elementWidth > Integer.parseInt(split[0]) || elementHeight > Integer.parseInt(split[1])) return false;
+        else return true;
     }
 
     /**
@@ -806,16 +803,10 @@ public abstract class AndroidBot extends AiBot {
      * @param {string} androidFilePath 安卓文件保存路径, 安卓外部存储根目录 /storage/emulated/0/
      * @return {Promise.<boolean>} 成功返回true 失败返回false
      */
-//    async pushFile(windowsFilePath, androidFilePath) {
-//        let fileData = await fs.readFileSync(windowsFilePath);
-//        let byteData = await this.setSendFile("pushFile", androidFilePath, fileData);
-//        let byteRet = await this.sendData(byteData);
-//        let strRet = byteRet.toString();
-//        if (strRet == "false")
-//            return false;
-//        else
-//            return true;
-//    }
+    public boolean pushFile(String windowsFilePath, String androidFilePath) throws IOException {
+        byte[] fileData = FileUtils.readFileToByteArray(new File(windowsFilePath));
+        return this.sendFile("pushFile", androidFilePath, fileData);
+    }
 
     /**
      * 拉取文件
@@ -889,6 +880,187 @@ public abstract class AndroidBot extends AiBot {
      */
     public boolean makeAndroidDir(String androidDirectory) {
         return this.booleanCmd("makeAndroidDir", androidDirectory);
+    }
+
+
+    /**
+     * Intent 跳转
+     *
+     * @param action      动作，例如 "android.intent.action.VIEW"
+     * @param uri         跳转链接，可选参数 例如：打开支付宝扫一扫界面，"alipayqr://platformapi/startapp?saId=10000007"
+     * @param packageName 包名，可选参数 "com.xxx.xxxxx"
+     * @param className   类名，可选参数
+     * @param type        类型，可选参数
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean startActivity(String action, String uri, String packageName, String className, String type) {
+        return this.booleanCmd("startActivity", action, uri, packageName, className, type);
+    }
+
+    /**
+     * 拨打电话
+     *
+     * @param phoneNumber 拨打的电话号码
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean callPhone(String phoneNumber) {
+        return this.booleanCmd("callPhone", phoneNumber);
+    }
+
+    /**
+     * 发送短信
+     *
+     * @param phoneNumber 发送的电话号码
+     * @param message     短信内容
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean sendMsg(String phoneNumber, String message) {
+        return this.booleanCmd("sendMsg", phoneNumber, message);
+    }
+
+    /**
+     * 获取当前活动窗口(Activity)
+     *
+     * @return {Promise.<string>} 成功返回当前activity
+     */
+    public String getActivity() {
+        return this.strCmd("getActivity");
+    }
+
+    /**
+     * 获取当前活动包名(Package)
+     *
+     * @return {Promise.<string>} 成功返回当前包名
+     */
+    public String getPackage() {
+        return this.strCmd("getPackage");
+    }
+
+    /**
+     * 设置剪切板文本
+     *
+     * @param {string} text 设置的文本
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean setClipboardText(String text) {
+        return this.booleanCmd("setClipboardText", text);
+    }
+
+    /**
+     * 获取剪切板文本
+     *
+     * @return {Promise.<string>} 需要打开aibote输入法。成功返回剪切板文本，失败返回null
+     */
+    public String getClipboardText() {
+        return this.strCmd("getClipboardText");
+    }
+
+    /**
+     * 创建TextView控件
+     *
+     * @param {number} id 控件ID，不可与其他控件重复
+     * @param {string} text 控件文本
+     * @param {number} x 控件在屏幕上x坐标
+     * @param {number} y 控件在屏幕上y坐标
+     * @param {number} width 控件宽度
+     * @param {number} height 控件高度
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean createTextView(int id, String text, int x, int y, int width, int height) {
+        return this.booleanCmd("createTextView", Integer.toString(id), text, Integer.toString(x), Integer.toString(y), Integer.toString(width), Integer.toString(height));
+    }
+
+    /**
+     * 创建EditText控件
+     *
+     * @param {number} id 控件ID，不可与其他控件重复
+     * @param {string} hintText 提示文本
+     * @param {number} x 控件在屏幕上x坐标
+     * @param {number} y 控件在屏幕上y坐标
+     * @param {number} width 控件宽度
+     * @param {number} height 控件高度
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean createEditText(int id, String text, int x, int y, int width, int height) {
+        return this.booleanCmd("createEditText", Integer.toString(id), text, Integer.toString(x), Integer.toString(y), Integer.toString(width), Integer.toString(height));
+    }
+
+    /**
+     * 创建CheckBox控件
+     *
+     * @param {number}  id 控件ID，不可与其他控件重复
+     * @param {string}  text 控件文本
+     * @param {number}  x 控件在屏幕上x坐标
+     * @param {number}  y 控件在屏幕上y坐标
+     * @param {number}  width 控件宽度
+     * @param {number}  height 控件高度
+     * @param {boolean} isSelect 是否勾选
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean createCheckBox(int id, String text, int x, int y, int width, int height, boolean isSelect) {
+        return this.booleanCmd("createCheckBox", Integer.toString(id), text, Integer.toString(x), Integer.toString(y), Integer.toString(width), Integer.toString(height), Boolean.toString(isSelect));
+    }
+
+    /**
+     * 创建ListText控件
+     *
+     * @param {number}   id 控件ID，不可与其他控件重复
+     * @param {string}   hintText 提示文本
+     * @param {number}   x 控件在屏幕上x坐标
+     * @param {number}   y 控件在屏幕上y坐标
+     * @param {number}   width 控件宽度
+     * @param {number}   height 控件高度
+     * @param {string[]} listText 列表文本
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean createListText(int id, String text, int x, int y, int width, int height, String listText) {
+        return this.booleanCmd("createListText", Integer.toString(id), text, Integer.toString(x), Integer.toString(y), Integer.toString(width), Integer.toString(height), listText);
+    }
+
+    /**
+     * 创建WebView控件
+     *
+     * @param {number} id 控件ID，不可与其他控件重复
+     * @param {string} url 加载的链接
+     * @param {number} x 控件在屏幕上x坐标，值为-1时自动填充宽高
+     * @param {number} y 控件在屏幕上y坐标，值为-1时自动填充宽高
+     * @param {number} width 控件宽度，值为-1时自动填充宽高
+     * @param {number} height 控件高度，值为-1时自动填充宽高
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean createWebView(int id, String url, int x, int y, int width, int height) {
+        return this.booleanCmd("createWebView", Integer.toString(id), url, Integer.toString(x), Integer.toString(y), Integer.toString(width), Integer.toString(height));
+    }
+
+    /**
+     * 清除脚本控件
+     *
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean clearScriptControl() {
+        return this.booleanCmd("clearScriptControl");
+    }
+
+    /**
+     * 获取脚本配置参数
+     *
+     * @return {Promise.<JSON>} 成功返回{"id":"text", "id":"isSelect"} 此类对象，失败返回null。函数仅返回TextEdit和CheckBox控件值，需要用户点击安卓端 "提交参数" 按钮
+     */
+    public JSONObject getScriptParam() {
+        String strRet = this.strCmd("getScriptParam");
+        if (strRet == null) return null;
+        else return JSONObject.parse(strRet);
+    }
+
+    //hid 使用 port = 56668;//固定端口
+
+    /**
+     * 初始化android Accessory，获取手机hid相关的数据。
+     *
+     * @return boolean
+     */
+    public boolean initAccessory() {
+        return this.booleanCmd("initAccessory");
     }
 
 }
