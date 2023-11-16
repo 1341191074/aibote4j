@@ -1,5 +1,8 @@
 package net.aibote.sdk.options;
 
+/**
+ * 用户winbot ， 标识前台执行或者后台执行
+ */
 public enum Mode {
 
     /**
