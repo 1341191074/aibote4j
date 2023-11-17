@@ -296,11 +296,11 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 滑动坐标
      *
-     * @param {number} startX 起始横坐标
-     * @param {number} startY 起始纵坐标
-     * @param {number} endX 结束横坐标
-     * @param {number} endY 结束纵坐标
-     * @param {number} duration 滑动时长，单位毫秒
+     * @param startX   起始横坐标
+     * @param startY   起始纵坐标
+     * @param endX     结束横坐标
+     * @param endY     结束纵坐标
+     * @param duration 滑动时长，单位毫秒
      * @return {Promise.<boolean>} 成功返回true 失败返回false
      */
     public boolean swipe(int startX, int startY, int endX, int endY, float duration) {
@@ -333,8 +333,8 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 发送按键
      *
-     * @param {number} keyCode 发送的虚拟按键，需要打开aibote输入法。例如：最近应用列表：187  回车：66
-     *                 按键对照表 https://blog.csdn.net/yaoyaozaiye/article/details/122826340
+     * @param keyCode 发送的虚拟按键，需要打开aibote输入法。例如：最近应用列表：187  回车：66
+     *                按键对照表 https://blog.csdn.net/yaoyaozaiye/article/details/122826340
      * @return {Promise.<boolean>} 成功返回true 失败返回false
      */
     public boolean sendVk(int keyCode) {
@@ -380,8 +380,8 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 初始化ocr服务
      *
-     * @param {string} ocrServerIp  ocr服务器IP。当参数值为 "127.0.0.1"时，则使用手机内置的ocr识别，不必打开AiboteAndroidOcr.exe服务端
-     * @param {number} ocrServerPort ocr服务器端口，默认9527
+     * @param ocrServerIp   ocr服务器IP。当参数值为 "127.0.0.1"时，则使用手机内置的ocr识别，不必打开AiboteAndroidOcr.exe服务端
+     * @param ocrServerPort ocr服务器端口，默认9527
      * @return {Promise.<boolean>} 总是返回true
      */
     public boolean initOcr(String ocrServerIp, int ocrServerPort) {
@@ -398,10 +398,10 @@ public abstract class AndroidBot extends AiBot {
      * @param thresholdType 二值化算法类型
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          操作模式，后台 true，前台 false。默认前台操作
+     * @param scale         scale 图片缩放率, 默认为 1.0
      * @return String jsonstr
      */
-    public List<OCRResult> ocr(Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public List<OCRResult> ocr(Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (null == region) {
             region = new Region();
         }
@@ -409,7 +409,7 @@ public abstract class AndroidBot extends AiBot {
             thresh = 127;
             maxval = 255;
         }
-        String strRet = this.strCmd("ocr", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), mode.boolValueStr());
+        String strRet = this.strCmd("ocr", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Float.toString(scale));
         if (null == strRet || strRet == "" || strRet == "null" || strRet == "[]") {
             return null;
         } else {
@@ -447,17 +447,17 @@ public abstract class AndroidBot extends AiBot {
      *                      6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          后台 true，前台 false。默认前台操作, 仅适用于hwnd
+     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return 失败返回null，成功返窗口上的文字
      */
-    public String getWords(Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public String getWords(Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
         }
 
         List<OCRResult> wordsResult = null;
-        wordsResult = this.ocr(region, thresholdType, thresh, maxval, mode);
+        wordsResult = this.ocr(region, thresholdType, thresh, maxval, scale);
 
         if (null == wordsResult) {
             return null;
@@ -486,17 +486,17 @@ public abstract class AndroidBot extends AiBot {
      *                      *                        6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          后台 true，前台 false。默认前台操作, 仅适用于hwnd
+     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return Point
      */
-    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval,float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
         }
 
         List<OCRResult> wordsResult = null;
-        wordsResult = this.ocr(region, thresholdType, thresh, maxval, mode);
+        wordsResult = this.ocr(region, thresholdType, thresh, maxval, scale);
 
 
         if (null == wordsResult) {
@@ -722,7 +722,7 @@ public abstract class AndroidBot extends AiBot {
      * @param xpath 元素路径
      * @return {Promise.<string>} 成功返回元素内容，失败返回null
      */
-    public String strDelayCmd(String xpath) {
+    public String getElementText(String xpath) {
         return this.setSendData("getElementText", xpath);
     }
 
@@ -779,7 +779,7 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 判断元素是否存在
      *
-     * @param {string} xpath 元素路径
+     * @param xpath 元素路径
      * @return {Promise.<boolean>} 成功返回true 失败返回false
      */
     public boolean existsElement(String xpath) {
@@ -799,8 +799,8 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 上传文件
      *
-     * @param {string} windowsFilePath 电脑文件路径，注意电脑路径 "\\"转义问题
-     * @param {string} androidFilePath 安卓文件保存路径, 安卓外部存储根目录 /storage/emulated/0/
+     * @param windowsFilePath 电脑文件路径，注意电脑路径 "\\"转义问题
+     * @param androidFilePath 安卓文件保存路径, 安卓外部存储根目录 /storage/emulated/0/
      * @return {Promise.<boolean>} 成功返回true 失败返回false
      */
     public boolean pushFile(String windowsFilePath, String androidFilePath) throws IOException {
@@ -811,8 +811,8 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 拉取文件
      *
-     * @param {string} androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
-     * @param {string} windowsFilePath 电脑文件保存路径，注意电脑路径 "\\"转义问题
+     * @param androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
+     * @param windowsFilePath 电脑文件保存路径，注意电脑路径 "\\"转义问题
      * @return {Promise.<void>}
      */
     public void pullFile(String androidFilePath, String windowsFilePath) throws IOException {
@@ -823,9 +823,9 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 写入安卓文件
      *
-     * @param {string}  androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
-     * @param {string}  text 写入的内容
-     * @param {boolean} isAppend 可选参数，是否追加，默认覆盖文件内容
+     * @param androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
+     * @param text            写入的内容
+     * @param {boolean}       isAppend 可选参数，是否追加，默认覆盖文件内容
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean writeAndroidFile(String androidFilePath, String text, boolean isAppend) {
@@ -835,7 +835,7 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 读取安卓文件
      *
-     * @param {string} androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
+     * @param androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
      * @return {Promise.<string>} 成功返回文件内容，失败返回 null
      */
     public String readAndroidFile(String androidFilePath) {
@@ -875,7 +875,7 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建安卓文件夹
      *
-     * @param {string} androidDirectory 安卓目录
+     * @param androidDirectory 安卓目录
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean makeAndroidDir(String androidDirectory) {
@@ -939,7 +939,7 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 设置剪切板文本
      *
-     * @param {string} text 设置的文本
+     * @param text 设置的文本
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean setClipboardText(String text) {
@@ -958,12 +958,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建TextView控件
      *
-     * @param {number} id 控件ID，不可与其他控件重复
-     * @param {string} text 控件文本
-     * @param {number} x 控件在屏幕上x坐标
-     * @param {number} y 控件在屏幕上y坐标
-     * @param {number} width 控件宽度
-     * @param {number} height 控件高度
+     * @param id     控件ID，不可与其他控件重复
+     * @param text   控件文本
+     * @param x      控件在屏幕上x坐标
+     * @param y      控件在屏幕上y坐标
+     * @param width  控件宽度
+     * @param height 控件高度
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean createTextView(int id, String text, int x, int y, int width, int height) {
@@ -973,12 +973,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建EditText控件
      *
-     * @param {number} id 控件ID，不可与其他控件重复
-     * @param {string} hintText 提示文本
-     * @param {number} x 控件在屏幕上x坐标
-     * @param {number} y 控件在屏幕上y坐标
-     * @param {number} width 控件宽度
-     * @param {number} height 控件高度
+     * @param id       控件ID，不可与其他控件重复
+     * @param hintText 提示文本
+     * @param x        控件在屏幕上x坐标
+     * @param y        控件在屏幕上y坐标
+     * @param width    控件宽度
+     * @param height   控件高度
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean createEditText(int id, String text, int x, int y, int width, int height) {
@@ -988,12 +988,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建CheckBox控件
      *
-     * @param {number}  id 控件ID，不可与其他控件重复
-     * @param {string}  text 控件文本
-     * @param {number}  x 控件在屏幕上x坐标
-     * @param {number}  y 控件在屏幕上y坐标
-     * @param {number}  width 控件宽度
-     * @param {number}  height 控件高度
+     * @param id        控件ID，不可与其他控件重复
+     * @param text      控件文本
+     * @param x         控件在屏幕上x坐标
+     * @param y         控件在屏幕上y坐标
+     * @param width     控件宽度
+     * @param height    控件高度
      * @param {boolean} isSelect 是否勾选
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
@@ -1004,12 +1004,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建ListText控件
      *
-     * @param {number}   id 控件ID，不可与其他控件重复
-     * @param {string}   hintText 提示文本
-     * @param {number}   x 控件在屏幕上x坐标
-     * @param {number}   y 控件在屏幕上y坐标
-     * @param {number}   width 控件宽度
-     * @param {number}   height 控件高度
+     * @param id         控件ID，不可与其他控件重复
+     * @param text       提示文本
+     * @param x          控件在屏幕上x坐标
+     * @param y          控件在屏幕上y坐标
+     * @param width      控件宽度
+     * @param height     控件高度
      * @param {string[]} listText 列表文本
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
@@ -1020,12 +1020,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建WebView控件
      *
-     * @param {number} id 控件ID，不可与其他控件重复
-     * @param {string} url 加载的链接
-     * @param {number} x 控件在屏幕上x坐标，值为-1时自动填充宽高
-     * @param {number} y 控件在屏幕上y坐标，值为-1时自动填充宽高
-     * @param {number} width 控件宽度，值为-1时自动填充宽高
-     * @param {number} height 控件高度，值为-1时自动填充宽高
+     * @param id     控件ID，不可与其他控件重复
+     * @param url    加载的链接
+     * @param x      控件在屏幕上x坐标，值为-1时自动填充宽高
+     * @param y      控件在屏幕上y坐标，值为-1时自动填充宽高
+     * @param width  控件宽度，值为-1时自动填充宽高
+     * @param height 控件高度，值为-1时自动填充宽高
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean createWebView(int id, String url, int x, int y, int width, int height) {
