@@ -398,10 +398,10 @@ public abstract class AndroidBot extends AiBot {
      * @param thresholdType 二值化算法类型
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          操作模式，后台 true，前台 false。默认前台操作
+     * @param scale         scale 图片缩放率, 默认为 1.0
      * @return String jsonstr
      */
-    public List<OCRResult> ocr(Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public List<OCRResult> ocr(Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (null == region) {
             region = new Region();
         }
@@ -409,7 +409,7 @@ public abstract class AndroidBot extends AiBot {
             thresh = 127;
             maxval = 255;
         }
-        String strRet = this.strCmd("ocr", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), mode.boolValueStr());
+        String strRet = this.strCmd("ocr", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Float.toString(scale));
         if (null == strRet || strRet == "" || strRet == "null" || strRet == "[]") {
             return null;
         } else {
@@ -447,17 +447,17 @@ public abstract class AndroidBot extends AiBot {
      *                      6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          后台 true，前台 false。默认前台操作, 仅适用于hwnd
+     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return 失败返回null，成功返窗口上的文字
      */
-    public String getWords(Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public String getWords(Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
         }
 
         List<OCRResult> wordsResult = null;
-        wordsResult = this.ocr(region, thresholdType, thresh, maxval, mode);
+        wordsResult = this.ocr(region, thresholdType, thresh, maxval, scale);
 
         if (null == wordsResult) {
             return null;
@@ -486,17 +486,17 @@ public abstract class AndroidBot extends AiBot {
      *                      *                        6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param mode          后台 true，前台 false。默认前台操作, 仅适用于hwnd
+     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return Point
      */
-    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval, Mode mode) {
+    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval,float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
         }
 
         List<OCRResult> wordsResult = null;
-        wordsResult = this.ocr(region, thresholdType, thresh, maxval, mode);
+        wordsResult = this.ocr(region, thresholdType, thresh, maxval, scale);
 
 
         if (null == wordsResult) {
@@ -1005,7 +1005,7 @@ public abstract class AndroidBot extends AiBot {
      * 创建ListText控件
      *
      * @param id         控件ID，不可与其他控件重复
-     * @param text   提示文本
+     * @param text       提示文本
      * @param x          控件在屏幕上x坐标
      * @param y          控件在屏幕上y坐标
      * @param width      控件宽度
