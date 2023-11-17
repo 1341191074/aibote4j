@@ -1,5 +1,4 @@
 import net.aibote.sdk.WinBot;
-import net.aibote.sdk.options.Mode;
 
 public class WinBotTest extends WinBot {
 
@@ -28,12 +27,17 @@ public class WinBotTest extends WinBot {
 //            System.out.println(words);
 //        }
 
-        String elementHwnd = this.getElementWindow("525472", "Window/Edit");
-        System.out.println("elementHwnd = " + elementHwnd); //应返回 526026
-        this.clickMouse("525472", 389, 73, 1, Mode.backed, elementHwnd);
-        this.sendKeysByHwnd(elementHwnd, "中文测试");
-        this.sendKeysByHwnd(elementHwnd, "en test");
+//        String elementHwnd = this.getElementWindow("525472", "Window/Edit");
+//        System.out.println("elementHwnd = " + elementHwnd); //应返回 526026
+//        this.clickMouse("525472", 389, 73, 1, Mode.backed, elementHwnd);
+//        this.sendKeysByHwnd(elementHwnd, "中文测试");
+//        this.sendKeysByHwnd(elementHwnd, "en test");
 
-        this.closeDriver();
+
+        String notepad = this.findWindow("Notepad", "");
+        System.out.println(notepad);
+
+
+       // this.closeDriver();
     }
 }
