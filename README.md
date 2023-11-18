@@ -27,5 +27,5 @@ Aibote能力：
 ```
 
 changelog生成
-git log --date=format:'%Y-%m-%d' --pretty="-%cd %an %s" > CHANGELOG.md
+git log --date=format:"%Y-%m-%d" --pretty="-%cd %an %s  " > CHANGELOG.md
 
