@@ -11,7 +11,7 @@ WinBotTest.java
 ```
 <br />
 
-```
+``` 
 Aibote是江西爱伯特科技自主研发的一款纯代码RPA办公自动化框架，支持Android、Browser和Windows 三大平台。框架免费、API和接口协议开源，个人、企业商用零费用
 以socket tcp接口协议通信方式命令驱动，支持任何一门计算机语言调用。
 
@@ -25,6 +25,43 @@ Aibote能力：
     6、自研AiboteScriptUI界面开发工具，提供人机交互功能，打包exe发布机器人可以在离线环境运行！
 ```
 <br />
+
+使用参考：
+``` JAVA
+public class WebBotTest extends WebBot {
+
+    public static void main(String[] args) {
+        Map<String, String> options = new HashMap<>();
+        options.put("debugPort", "9223");
+        WebBot.startServer(WebBotTest.class, "127.0.0.1", 19028, options);
+    }
+
+    //模拟远程启动
+    //WebDriver.exe "{\"serverIp\":\"127.0.0.1\",\"serverPort\":18023,\"browserName\":\"chrome\",\"debugPort\":9223,\"browserPath\":\"null\",\"argument\":\"null\",\"userDataDir\":\"null\",\"extendParam\":\"\"}"
+    @Override
+    public void webMain() {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        boolean ret = this.navigate("http://www.baidu.com");//url必须带http://
+        log.info(String.valueOf(ret));
+        String curPageId = this.getCurPageId();
+        log.info(curPageId);
+        try {
+            Thread.sleep(3000);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        String base64 = this.takeScreenshot(null);
+        log.info(base64);
+        //this.closeBrowser(); //关闭浏览器时，driver会一同关闭
+        //this.closeDriver();
+    }
+}
+```
 
 changelog生成
 git log --date=format:"%Y-%m-%d" --pretty="- %cd %an %s%n`````` %n%b%n``````" > CHANGELOG.md
