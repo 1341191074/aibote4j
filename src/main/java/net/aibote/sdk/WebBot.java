@@ -760,5 +760,38 @@ public abstract class WebBot extends AiBot {
         return booleanCmd("closeDriver");
     }
 
+    /**
+     * 仿真模式 开始触屏
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @return
+     */
+    public boolean touchStart(int x, int y) {
+        return booleanCmd("touchStart", Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * 仿真模式 移动触屏
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @return
+     */
+    public boolean touchMove(int x, int y) {
+        return booleanCmd("touchMove", Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * 仿真模式 结束触屏
+     *
+     * @param x x坐标
+     * @param y y坐标
+     * @return
+     */
+    public boolean touchEnd(int x, int y) {
+        return booleanCmd("touchEnd", Integer.toString(x), Integer.toString(y));
+    }
+
 }
 
