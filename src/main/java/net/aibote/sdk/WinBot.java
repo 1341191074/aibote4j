@@ -459,15 +459,18 @@ public abstract class WinBot extends AiBot {
     /**
      * 初始化ocr服务
      *
-     * @param ocrServerIp   ocr服务器IP
-     * @param ocrServerPort ocr服务器端口，默认9528。 注意，如果传入的值<=0 ，则都会当默认端口处理。
+     * @param ocrServerIp    ocr服务器IP
+     * @param ocrServerPort  ocr服务器端口，默认9528。 注意，如果传入的值<=0 ，则都会当默认端口处理。
+     * @param useAngleModel  支持图像旋转。 默认false。仅内置ocr有效。内置OCR需要安装
+     * @param enableGPU      启动GPU 模式。默认false 。GPU模式需要电脑安装NVIDIA驱动，并且到群文件下载对应cuda版本
+     * @param enableTensorrt 启动加速，仅 enableGPU = true 时有效，默认false 。图片太大可能会导致GPU内存不足
      * @return boolean 总是返回true
      */
-    public boolean initOcr(String ocrServerIp, int ocrServerPort) {
+    public boolean initOcr(String ocrServerIp, int ocrServerPort, boolean useAngleModel, boolean enableGPU, boolean enableTensorrt) {
         if (ocrServerPort <= 0) {
             ocrServerPort = 9528;
         }
-        return this.booleanCmd("initOcr", ocrServerIp, Integer.toString(ocrServerPort));
+        return this.booleanCmd("initOcr", ocrServerIp, Integer.toString(ocrServerPort), Boolean.toString(useAngleModel), Boolean.toString(enableGPU), Boolean.toString(enableTensorrt));
     }
 
     /**

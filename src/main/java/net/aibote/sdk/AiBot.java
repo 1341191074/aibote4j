@@ -196,4 +196,12 @@ public abstract class AiBot implements Runnable {
         return retStr;
     }
 
+    /**
+     * 获取当前Aibote的版本号
+     * @return String
+     */
+    public String getVersion(){
+        return "2023-11-18";
+    }
+
 }
