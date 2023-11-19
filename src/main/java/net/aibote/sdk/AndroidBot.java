@@ -45,6 +45,9 @@ public abstract class AndroidBot extends AiBot {
 
         // 创建 Socket 服务端，并设置监听的端口
         try (ServerSocket serverSocket = new ServerSocket(androidBot.getServerPort())) {
+            ChannelMap channelMap =new ChannelMap();
+            new Thread(channelMap).start();
+            Thread thread;
             while (true) {
                 // 阻塞方法，监听客户端请求
                 Socket socket = serverSocket.accept();
@@ -52,8 +55,8 @@ public abstract class AndroidBot extends AiBot {
                 androidBot.setClientCocket(socket);
                 // 处理客户端请求
                 //poolExecutor.execute(webBot);
-                ChannelMap.getChannelMap().put(String.valueOf(socket.getInetAddress()), socket);
-                new Thread(androidBot).start();
+                thread = Thread.ofVirtual().unstarted(androidBot);
+                thread.start();
             }
         } catch (Exception ignored) {
 

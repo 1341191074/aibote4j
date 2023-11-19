@@ -1,7 +1,5 @@
 package net.aibote.utils;
 
-import sun.misc.BASE64Decoder;
-import sun.misc.BASE64Encoder;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -26,8 +24,7 @@ public class ImageBase64Converter {
             e.printStackTrace();
         }
         // 对字节数组进行Base64编码，得到Base64编码的字符串
-        BASE64Encoder encoder = new BASE64Encoder();
-        return encoder.encode(data);
+        return Base64Utils.encodeBASE64(data);
     }
 
     /**
@@ -43,8 +40,7 @@ public class ImageBase64Converter {
                 dir.mkdirs();
             }
 
-            BASE64Decoder decoder = new BASE64Decoder();
-            byte[] bfile = decoder.decodeBuffer(fileBase64String);
+            byte[] bfile = Base64Utils.decodeBASE64(fileBase64String);
 
             file = new File(filePath + File.separator + fileName);
             fos = new FileOutputStream(file);

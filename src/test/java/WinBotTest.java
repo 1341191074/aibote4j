@@ -3,9 +3,7 @@ import net.aibote.sdk.WinBot;
 public class WinBotTest extends WinBot {
 
     public static void main(String[] args) {
-
         WinBot.startServer(WinBotTest.class, "127.0.0.1", 26678, "E:\\aibote\\Aibote\\");
-
 
     }
 
@@ -33,11 +31,17 @@ public class WinBotTest extends WinBot {
 //        this.sendKeysByHwnd(elementHwnd, "中文测试");
 //        this.sendKeysByHwnd(elementHwnd, "en test");
 
-
         String notepad = this.findWindow("Notepad", "");
         System.out.println(notepad);
+        String elementWindow = this.getElementWindow(notepad, "Window/Edit");
+        this.sendKeysByHwnd(elementWindow, "测试文字发送abcdef1234567890");
+        System.out.println(" === " + this.getExtendParam());
 
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+        }
 
-       // this.closeDriver();
+        // this.closeDriver();
     }
 }

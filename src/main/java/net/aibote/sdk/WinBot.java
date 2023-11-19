@@ -60,6 +60,9 @@ public abstract class WinBot extends AiBot {
 
         // 创建 Socket 服务端，并设置监听的端口
         try (ServerSocket serverSocket = new ServerSocket(winBot.getServerPort())) {
+            ChannelMap channelMap =new ChannelMap();
+            new Thread(channelMap).start();
+            Thread thread;
             while (true) {
                 // 阻塞方法，监听客户端请求
                 Socket socket = serverSocket.accept();
@@ -67,8 +70,9 @@ public abstract class WinBot extends AiBot {
                 winBot.setClientCocket(socket);
                 // 处理客户端请求
                 //poolExecutor.execute(webBot);
-                ChannelMap.getChannelMap().put(String.valueOf(socket.getInetAddress()), socket);
-                new Thread(winBot).start();
+                //new Thread(winBot).start();
+                thread = Thread.ofVirtual().unstarted(winBot);
+                thread.start();
             }
         } catch (Exception ignored) {
 

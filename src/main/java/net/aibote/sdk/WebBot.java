@@ -104,6 +104,9 @@ public abstract class WebBot extends AiBot {
 
         // 创建 Socket 服务端，并设置监听的端口
         try (ServerSocket serverSocket = new ServerSocket(webBot.getServerPort())) {
+            ChannelMap channelMap =new ChannelMap();
+            new Thread(channelMap).start();
+            Thread thread;
             while (true) {
                 // 阻塞方法，监听客户端请求
                 Socket socket = serverSocket.accept();
@@ -111,7 +114,9 @@ public abstract class WebBot extends AiBot {
                 webBot.setClientCocket(socket);
                 // 处理客户端请求
                 //poolExecutor.execute(webBot);
-                new Thread(webBot).start();
+                //new Thread(webBot).start();
+                thread = Thread.ofVirtual().unstarted(webBot);
+                thread.start();
             }
         } catch (Exception ignored) {
 

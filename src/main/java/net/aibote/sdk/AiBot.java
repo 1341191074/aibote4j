@@ -1,6 +1,6 @@
 package net.aibote.sdk;
 
-import lombok.Data;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,7 +10,7 @@ import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 
-@Data
+
 public abstract class AiBot implements Runnable {
 
     protected static final Logger log = LoggerFactory.getLogger(AiBot.class);
@@ -18,11 +18,26 @@ public abstract class AiBot implements Runnable {
     protected long waitTimeout = 5000;
     protected long intervalTimeout = 200;
     protected Socket clientCocket = null;
+    @Getter
+    private String keyId = null;
+
+    public void setClientCocket(Socket clientCocket) {
+        this.clientCocket = clientCocket;
+        keyId = clientCocket.getInetAddress().getHostAddress();
+    }
 
     @Override
     public void run() {
-        webMain();
-        close(); //脚本执行完毕，关闭通道
+        if (null != clientCocket && clientCocket.isConnected()) {
+            ChannelMap.getChannelMap().put(keyId, this); //启动后，加入全局监控
+            try {
+                webMain();
+            } catch (RuntimeException e) {
+                // nothing
+            }
+            close(); //脚本执行完毕，关闭通道
+            ChannelMap.getChannelMap().remove(keyId);//删除全局监控
+        }
     }
 
     protected void sleep(long millis) {
@@ -45,7 +60,7 @@ public abstract class AiBot implements Runnable {
         }
     }
 
-    public abstract void webMain();
+    public abstract void webMain() throws RuntimeException;
 
     /**
      * 组织协议参数
@@ -127,14 +142,15 @@ public abstract class AiBot implements Runnable {
             int dataLen = Integer.parseInt(byteArrayOutputStream.toString());
             byteArrayOutputStream.reset();//重置
 
-            byte[] bytes = new byte[1024];
-            int readLine = inputStream.read(bytes);
-            byteArrayOutputStream.write(bytes, 0, readLine);//写入真实数据。根据实际读入长度写入数据。最大写入1024字节。
-            while (dataLen > byteArrayOutputStream.toByteArray().length) {//如果包长度大于真实数据，则继续读取。
-                readLine = inputStream.read(bytes);
-                byteArrayOutputStream.write(bytes, 0, readLine);
+            if (dataLen > 0) {
+                byte[] bytes = new byte[1024];
+                int readLine = inputStream.read(bytes);
+                byteArrayOutputStream.write(bytes, 0, readLine);//写入真实数据。根据实际读入长度写入数据。最大写入1024字节。
+                while (dataLen > byteArrayOutputStream.toByteArray().length) {//如果包长度大于真实数据，则继续读取。
+                    readLine = inputStream.read(bytes);
+                    byteArrayOutputStream.write(bytes, 0, readLine);
+                }
             }
-
             return byteArrayOutputStream.toByteArray();
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -198,9 +214,10 @@ public abstract class AiBot implements Runnable {
 
     /**
      * 获取当前Aibote的版本号
+     *
      * @return String
      */
-    public String getVersion(){
+    public String getVersion() {
         return "2023-11-18";
     }
 
