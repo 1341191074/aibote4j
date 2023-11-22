@@ -18,6 +18,7 @@ import org.apache.hc.core5.http.message.BasicNameValuePair;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,7 +44,7 @@ public class HttpClientUtils {
         HttpPost httpPost = new HttpPost(url);
         //httpPost.setProtocolVersion(new ProtocolVersion("HTTP", 1, 0));
         httpPost.addHeader("Content-Type", "application/json");
-        httpPost.setEntity(new StringEntity(bodyJsonParams, Charset.forName("UTF-8")));
+        httpPost.setEntity(new StringEntity(bodyJsonParams, StandardCharsets.UTF_8));
 
         addHeader(httpPost, headers);
         return execute(httpPost);
@@ -133,7 +134,7 @@ public class HttpClientUtils {
     public static String doPut(String url, String bodyJsonParams, Map<String, String> headers) throws Exception {
         HttpPut httpPut = new HttpPut(url);
         httpPut.addHeader("Content-Type", "application/json");
-        httpPut.setEntity(new StringEntity(bodyJsonParams, Charset.forName("UTF-8")));
+        httpPut.setEntity(new StringEntity(bodyJsonParams, StandardCharsets.UTF_8));
 
         addHeader(httpPut, headers);
         return execute(httpPut);

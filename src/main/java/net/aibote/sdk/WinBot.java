@@ -15,6 +15,7 @@ import net.aibote.utils.ImageBase64Converter;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.*;
@@ -30,12 +31,11 @@ public abstract class WinBot extends AiBot {
     public static void startServer(Class<? extends WinBot> webBotClass, String serverIp, int serverPort, String driverPath) {
         WinBot winBot = null;
         try {
-            winBot = webBotClass.newInstance();
+            winBot = webBotClass.getDeclaredConstructor().newInstance();
             winBot.setServerIp(serverIp);
             winBot.setServerPort(serverPort);
 
-
-        } catch (InstantiationException | IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
             throw new RuntimeException(e);
         }
 
@@ -51,7 +51,7 @@ public abstract class WinBot extends AiBot {
                 }
                 command += " " + serverIp + " " + serverPort;
                 //log.info(command);
-                Process process = Runtime.getRuntime().exec(command);
+                Process process = Runtime.getRuntime().exec(new String[]{command});
                 //log.info("启动driver");
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -60,7 +60,7 @@ public abstract class WinBot extends AiBot {
 
         // 创建 Socket 服务端，并设置监听的端口
         try (ServerSocket serverSocket = new ServerSocket(winBot.getServerPort())) {
-            ChannelMap channelMap =new ChannelMap();
+            ChannelMap channelMap = new ChannelMap();
             new Thread(channelMap).start();
             Thread thread;
             while (true) {
