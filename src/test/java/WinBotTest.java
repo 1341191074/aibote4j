@@ -34,11 +34,9 @@ public class WinBotTest extends WinBot {
         String notepad = this.findWindow("Notepad", "");
         System.out.println(notepad);
         String elementWindow = this.getElementWindow(notepad, "Window/Edit");
-        this.sendKeysByHwnd(elementWindow, "测试文字发送abcdef1234567890");
-        System.out.println(" === " + this.getExtendParam());
-
+        this.sendKeysByHwnd(elementWindow, "最小化发送测试");
         try {
-            Thread.sleep(10000);
+            Thread.sleep(1000);
         } catch (InterruptedException e) {
         }
 

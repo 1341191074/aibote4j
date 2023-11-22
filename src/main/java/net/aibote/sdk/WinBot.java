@@ -51,7 +51,7 @@ public abstract class WinBot extends AiBot {
                 }
                 command += " " + serverIp + " " + serverPort;
                 //log.info(command);
-                Process process = Runtime.getRuntime().exec(new String[]{command});
+                Process process = Runtime.getRuntime().exec(command);
                 //log.info("启动driver");
             } catch (IOException e) {
                 throw new RuntimeException(e);

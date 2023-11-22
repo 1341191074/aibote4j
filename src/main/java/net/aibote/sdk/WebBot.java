@@ -267,7 +267,7 @@ public abstract class WebBot extends AiBot {
      * @param value 目标值
      * @return boolean
      */
-    public boolean clickElement(String xpath, String value) {
+    public boolean setElementValue(String xpath, String value) {
         return booleanCmd("setElementValue", xpath, value);
     }
 
