@@ -45,7 +45,7 @@ public abstract class AndroidBot extends AiBot {
 
         // 创建 Socket 服务端，并设置监听的端口
         try (ServerSocket serverSocket = new ServerSocket(androidBot.getServerPort())) {
-            ChannelMap channelMap =new ChannelMap();
+            ChannelMap channelMap = new ChannelMap();
             new Thread(channelMap).start();
             Thread thread;
             while (true) {
@@ -450,7 +450,7 @@ public abstract class AndroidBot extends AiBot {
      *                      6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
+     * @param scale         浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return 失败返回null，成功返窗口上的文字
      */
     public String getWords(Region region, int thresholdType, int thresh, int maxval, float scale) {
@@ -489,10 +489,10 @@ public abstract class AndroidBot extends AiBot {
      *                      *                        6   ADAPTIVE_THRESH_GAUSSIAN_C算法，自适应阈值
      * @param thresh        阈值
      * @param maxval        最大值
-     * @param scale浮点型 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
+     * @param scale         浮点型      图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数
      * @return Point
      */
-    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval,float scale) {
+    public Point findWords(String word, Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
