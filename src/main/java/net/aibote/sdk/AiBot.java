@@ -3,12 +3,15 @@ package net.aibote.sdk;
 import lombok.Getter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 
 public abstract class AiBot implements Runnable {
@@ -20,6 +23,20 @@ public abstract class AiBot implements Runnable {
     protected Socket clientCocket = null;
     @Getter
     private String keyId = null;
+    protected Map<String, Object> ymlConfig = null;
+
+    public AiBot() {
+        Yaml yaml = new Yaml();
+        InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("BotServer.yml");
+        ymlConfig = yaml.load(inputStream);
+        log.info("读取到配置文件" + ymlConfig.toString());
+        try {
+            assert inputStream != null;
+            inputStream.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     public void setClientCocket(Socket clientCocket) {
         this.clientCocket = clientCocket;
@@ -29,33 +46,31 @@ public abstract class AiBot implements Runnable {
     @Override
     public void run() {
         if (null != clientCocket && clientCocket.isConnected()) {
-            ChannelMap.getChannelMap().put(keyId, this); //启动后，加入全局监控
             try {
                 webMain();
             } catch (RuntimeException e) {
                 // nothing
             }
             close(); //脚本执行完毕，关闭通道
-            ChannelMap.getChannelMap().remove(keyId);//删除全局监控
         }
     }
 
     protected void sleep(long millis) {
         try {
-            Thread.sleep(millis);
+            TimeUnit.MILLISECONDS.sleep(millis);
         } catch (InterruptedException e) {
         }
     }
 
     private void close() {
         try {
-            Thread.sleep(2000);
+            this.sleep(2000);
             this.clientCocket.shutdownOutput();
             this.clientCocket.shutdownInput();
             this.clientCocket.close();
             this.clientCocket = null;
             log.info("关闭通道");
-        } catch (IOException | InterruptedException e) {
+        } catch (IOException e) {
             log.error(e.getMessage(), e);
         }
     }
@@ -90,7 +105,7 @@ public abstract class AiBot implements Runnable {
      * @param strData
      * @return
      */
-    protected synchronized String sendData(String strData) {
+    protected String sendData(String strData) {
         byte[] bytes = this.sendDataForBytes(strData);
         if (null == bytes) {
             return null;
@@ -98,12 +113,12 @@ public abstract class AiBot implements Runnable {
         return new String(bytes);
     }
 
-    protected synchronized byte[] sendDataForBytes(String strData) {
+    protected byte[] sendDataForBytes(String strData) {
         log.info("发送命令：" + strData);
         return sendBytes(strData.getBytes(StandardCharsets.UTF_8));
     }
 
-    protected synchronized boolean sendFile(String functionName, String androidFilePath, byte[] fileData) {
+    protected boolean sendFile(String functionName, String androidFilePath, byte[] fileData) {
         StringBuilder strData = new StringBuilder();
         strData.append(functionName.getBytes().length).append("/");
         strData.append(androidFilePath.getBytes().length).append("/");
@@ -218,7 +233,7 @@ public abstract class AiBot implements Runnable {
      * @return String
      */
     public String getVersion() {
-        return "2023-11-18";
+        return "2023-11-25";
     }
 
 }

@@ -1,10 +1,13 @@
 import net.aibote.sdk.WinBot;
+import net.aibote.server.WinBoteServer;
 
 public class WinBotTest extends WinBot {
 
     public static void main(String[] args) {
-        WinBot.startServer(WinBotTest.class, "127.0.0.1", 26678, "E:\\aibote\\Aibote\\");
-
+        //WinBot.startServer(WinBotTest.class, "127.0.0.1", 26678, "E:\\aibote\\Aibote\\");
+        WinBoteServer winBoteServer = new WinBoteServer();
+        winBoteServer.runLocalClient(19029, null);
+        winBoteServer.startServer(WinBotTest.class, 19029);
     }
 
     @Override
@@ -30,6 +33,9 @@ public class WinBotTest extends WinBot {
 //        this.clickMouse("525472", 389, 73, 1, Mode.backed, elementHwnd);
 //        this.sendKeysByHwnd(elementHwnd, "中文测试");
 //        this.sendKeysByHwnd(elementHwnd, "en test");
+
+        String myconf = (String) super.ymlConfig.get("myconf");
+        System.out.println(myconf);
 
         String notepad = this.findWindow("Notepad", "");
         System.out.println(notepad);

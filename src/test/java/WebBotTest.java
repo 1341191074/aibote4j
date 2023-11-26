@@ -1,14 +1,13 @@
 import net.aibote.sdk.WebBot;
 
-import java.util.HashMap;
-import java.util.Map;
+import net.aibote.server.WebBotServer;
 
 public class WebBotTest extends WebBot {
 
     public static void main(String[] args) {
-        Map<String, String> options = new HashMap<>();
-        options.put("debugPort", "9223");
-        WebBot.startServer(WebBotTest.class, "127.0.0.1", 19028, options);
+        WebBotServer webBotServer = new WebBotServer();
+        webBotServer.runLocalClient(19028, null, 0, null, null, null, null);
+        webBotServer.startServer(WebBotTest.class, 19028);
     }
 
     //模拟远程启动
@@ -32,6 +31,9 @@ public class WebBotTest extends WebBot {
 
         curPageId = this.getCurPageId();
         log.info("第二次获取pageId : " + curPageId);
+
+        String myconf = (String) super.ymlConfig.get("myconf");
+        System.out.println(myconf);
 
 //        this.switchPage(curPageId);
 //        this.clickElement("//*[@id=\"nav-searchform\"]/div[2]");

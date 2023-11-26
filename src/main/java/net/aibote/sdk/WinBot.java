@@ -14,73 +14,11 @@ import net.aibote.utils.HttpClientUtils;
 import net.aibote.utils.ImageBase64Converter;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.*;
-import java.util.stream.Stream;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class WinBot extends AiBot {
-    private String serverIp = "127.0.0.1"; //默认本机
-    private int serverPort = 0;
-    private Stream<OCRResult> ocrResultStream;
-
-    public static void startServer(Class<? extends WinBot> webBotClass, String serverIp, int serverPort, String driverPath) {
-        WinBot winBot = null;
-        try {
-            winBot = webBotClass.getDeclaredConstructor().newInstance();
-            winBot.setServerIp(serverIp);
-            winBot.setServerPort(serverPort);
-
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (winBot.getServerPort() <= 0 || winBot.getServerPort() > 65535) {
-            throw new RuntimeException("服务端口必须介于 0 ~ 65535");
-        }
-
-        if ("127.0.0.1".equals(winBot.getServerIp()) || "localhost".equals(winBot.getServerIp())) { //本机启动。
-            try {
-                String command = "WindowsDriver.exe";
-                if (null != driverPath) {
-                    command = driverPath + command;
-                }
-                command += " " + serverIp + " " + serverPort;
-                //log.info(command);
-                Process process = Runtime.getRuntime().exec(command);
-                //log.info("启动driver");
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        // 创建 Socket 服务端，并设置监听的端口
-        try (ServerSocket serverSocket = new ServerSocket(winBot.getServerPort())) {
-            ChannelMap channelMap = new ChannelMap();
-            new Thread(channelMap).start();
-            Thread thread;
-            while (true) {
-                // 阻塞方法，监听客户端请求
-                Socket socket = serverSocket.accept();
-
-                winBot.setClientCocket(socket);
-                // 处理客户端请求
-                //poolExecutor.execute(webBot);
-                //new Thread(winBot).start();
-                thread = Thread.ofVirtual().unstarted(winBot);
-                thread.start();
-            }
-        } catch (Exception ignored) {
-
-        } finally {
-            log.info("服务器关闭");
-        }
-
-    }
 
     /**
      * 查找窗口句柄
@@ -659,6 +597,46 @@ public abstract class WinBot extends AiBot {
             point.y = y;
         }
         return point;
+    }
+
+    /**
+     * 初始化yolo服务
+     *
+     * @param yoloServerIp yolo服务器IP。端口固定为9528
+     * @param modelPath    模型路径
+     * @return {Promise.<boolean>} 总是返回true
+     */
+    public boolean initYolo(String yoloServerIp, String modelPath) {
+        return this.booleanCmd("initYolo", yoloServerIp, modelPath);
+    }
+
+    /**
+     * yoloByHwnd
+     *
+     * @param hwnd 窗口句柄
+     * @param mode 操作模式，后台 true，前台 false。默认前台操作
+     * @return {Promise.<[]>} 失败返回null，成功返回数组形式的识别结果
+     */
+    public JSONArray yoloByHwnd(String hwnd, Mode mode) {
+        String strRet = this.strCmd("yoloByHwnd", hwnd, mode.boolValueStr());
+        if (StringUtils.isNotBlank(strRet)) {
+            return JSONArray.parse(strRet);
+        }
+        return null;
+    }
+
+    /**
+     * yoloByFile
+     *
+     * @param imagePath 图片路径
+     * @return {Promise.<[]>} 失败返回null，成功返回数组形式的识别结果
+     */
+    public JSONArray yoloByFile(String imagePath) {
+        String strRet = this.strCmd("yoloByFile", imagePath);
+        if (StringUtils.isNotBlank(strRet)) {
+            return JSONArray.parse(strRet);
+        }
+        return null;
     }
 
     /**

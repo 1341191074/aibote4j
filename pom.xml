@@ -12,13 +12,15 @@
         <maven.compiler.target>8</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <fastjson2.version>2.0.42</fastjson2.version>
-        <httpcomponents.version>5.2.1</httpcomponents.version>
-        <commons-lang3.version>3.13.0</commons-lang3.version>
+        <httpcomponents.version>5.2.2</httpcomponents.version>
+        <commons-lang3.version>3.14.0</commons-lang3.version>
         <lombok.version>1.18.30</lombok.version>
         <commons-io.version>2.15.0</commons-io.version>
         <commons-codec.version>1.16.0</commons-codec.version>
+        <logback-classic.version>1.4.11</logback-classic.version>
+        <snakeyaml.version>2.2</snakeyaml.version>
+        <slf4j-api.version>2.0.9</slf4j-api.version>
     </properties>
-
 
     <dependencies>
         <dependency>
@@ -42,21 +44,6 @@
             <version>${httpcomponents.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>1.7.32</version>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <version>1.2.9</version>
-        </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-        </dependency>
-        <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
@@ -66,7 +53,27 @@
             <artifactId>commons-codec</artifactId>
             <version>${commons-codec.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>${slf4j-api.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback-classic.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>${snakeyaml.version}</version>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
@@ -86,5 +93,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

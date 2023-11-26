@@ -11,60 +11,17 @@ import net.aibote.sdk.options.Mode;
 import net.aibote.sdk.options.Region;
 import net.aibote.sdk.options.SubColor;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
 public abstract class AndroidBot extends AiBot {
-    private String serverIp = "127.0.0.1"; //默认本机
-    private int serverPort = 0;
-    private Stream<OCRResult> ocrResultStream;
-
-    public static void startServer(Class<? extends AndroidBot> webBotClass, String serverIp, int serverPort, String driverPath) {
-        AndroidBot androidBot = null;
-        try {
-            androidBot = webBotClass.newInstance();
-            androidBot.setServerIp(serverIp);
-            androidBot.setServerPort(serverPort);
-
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-
-        if (androidBot.getServerPort() <= 0 || androidBot.getServerPort() > 65535) {
-            throw new RuntimeException("服务端口必须介于 0 ~ 65535");
-        }
-
-        // 创建 Socket 服务端，并设置监听的端口
-        try (ServerSocket serverSocket = new ServerSocket(androidBot.getServerPort())) {
-            ChannelMap channelMap = new ChannelMap();
-            new Thread(channelMap).start();
-            Thread thread;
-            while (true) {
-                // 阻塞方法，监听客户端请求
-                Socket socket = serverSocket.accept();
-
-                androidBot.setClientCocket(socket);
-                // 处理客户端请求
-                //poolExecutor.execute(webBot);
-                thread = Thread.ofVirtual().unstarted(androidBot);
-                thread.start();
-            }
-        } catch (Exception ignored) {
-
-        } finally {
-            log.info("服务器关闭");
-        }
-
-    }
 
     /**
      * 截图保存<br />
@@ -383,15 +340,18 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 初始化ocr服务
      *
-     * @param ocrServerIp   ocr服务器IP。当参数值为 "127.0.0.1"时，则使用手机内置的ocr识别，不必打开AiboteAndroidOcr.exe服务端
-     * @param ocrServerPort ocr服务器端口，默认9527
+     * @param ocrServerIp    ocr服务器IP。当参数值为 "127.0.0.1"时，则使用手机内置的ocr识别，不必打开AiboteAndroidOcr.exe服务端
+     * @param ocrServerPort  ocr服务器端口，默认9527
+     * @param useAngleModel  支持图像旋转。 默认false
+     * @param enableGPU      启动GPU 模式。默认false
+     * @param enableTensorrt 启动加速，仅enableGPU = true 时有效，默认false
      * @return {Promise.<boolean>} 总是返回true
      */
-    public boolean initOcr(String ocrServerIp, int ocrServerPort) {
+    public boolean initOcr(String ocrServerIp, int ocrServerPort, boolean useAngleModel, boolean enableGPU, boolean enableTensorrt) {
         if (ocrServerPort <= 0) {
             ocrServerPort = 9527;
         }
-        return this.booleanCmd("initOcr", ocrServerIp, Integer.toString(ocrServerPort));
+        return this.booleanCmd("initOcr", ocrServerIp, Integer.toString(ocrServerPort), Boolean.toString(useAngleModel), Boolean.toString(enableGPU), Boolean.toString(enableTensorrt));
     }
 
     /**
@@ -528,6 +488,43 @@ public abstract class AndroidBot extends AiBot {
             point.y = y;
         }
         return point;
+    }
+
+    /**
+     * 初始化yolo服务
+     *
+     * @param yoloServerIp yolo服务器IP。端口固定为9528
+     * @param modelPath    模型路径
+     * @return {Promise.<boolean>} 总是返回true
+     */
+    public boolean initYolo(String yoloServerIp, String modelPath) {
+        return this.booleanCmd("initYolo", yoloServerIp, modelPath);
+    }
+
+    /**
+     * yolo
+     *
+     * @param scale 图片缩放率, 默认为 1.0 原大小。大于1.0放大，小于1.0缩小，不能为负数。
+     * @return {Promise.<[]>} 失败返回null，成功返回数组形式的识别结果， 0~3目标矩形位置  4目标类别  5置信度
+     */
+    public JSONArray yolo(float scale) {
+        if (scale <= 0) {
+            scale = 1.0F;
+        }
+        String strRet = this.strCmd("yolo", Float.toString(scale));
+        if (StringUtils.isNotBlank(strRet)) {
+            JSONArray retJson = JSONArray.parse(strRet);
+            JSONArray jsonArray;
+            for (int i = 0; i < retJson.size(); i++) {
+                jsonArray = retJson.getJSONArray(i);
+                jsonArray.set(0, jsonArray.getFloatValue(0) / scale);
+                jsonArray.set(1, jsonArray.getFloatValue(1) / scale);
+                jsonArray.set(2, jsonArray.getFloatValue(2) / scale);
+                jsonArray.set(3, jsonArray.getFloatValue(3) / scale);
+            }
+            return retJson;
+        }
+        return null;
     }
 
     /**
