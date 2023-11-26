@@ -843,6 +843,16 @@ public abstract class AndroidBot extends AiBot {
     }
 
     /**
+     * 读取安卓文件
+     *
+     * @param androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
+     * @return 成功返回文件字节数组，失败返回 null
+     */
+    public byte[] readAndroidFileBytes(String androidFilePath) {
+        return this.bytesCmd("readAndroidFile", androidFilePath);
+    }
+
+    /**
      * 删除安卓文件
      *
      * @param androidFilePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
