@@ -65,7 +65,7 @@ public abstract class AndroidBot extends AiBot {
      * @param scale         保存的位置
      * @return {Promise.<boolean>}
      */
-    public byte[] takeScreenshot(String savePath, Region region, int thresholdType, int thresh, int maxval, float scale) {
+    public byte[] takeScreenshot(Region region, int thresholdType, int thresh, int maxval, float scale) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
@@ -1059,7 +1059,7 @@ public abstract class AndroidBot extends AiBot {
         else return JSONObject.parse(strRet);
     }
 
-     /**
+    /**
      * 初始化android Accessory，获取手机hid相关的数据。
      *
      * @return boolean
