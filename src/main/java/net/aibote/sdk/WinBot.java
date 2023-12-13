@@ -604,10 +604,11 @@ public abstract class WinBot extends AiBot {
      *
      * @param yoloServerIp yolo服务器IP。端口固定为9528
      * @param modelPath    模型路径
+     *  @param classesPath    种类路径，CPU模式需要此参数
      * @return {Promise.<boolean>} 总是返回true
      */
-    public boolean initYolo(String yoloServerIp, String modelPath) {
-        return this.booleanCmd("initYolo", yoloServerIp, modelPath);
+    public boolean initYolo(String yoloServerIp, String modelPath,String classesPath) {
+        return this.booleanCmd("initYolo", yoloServerIp, modelPath,classesPath);
     }
 
     /**

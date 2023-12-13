@@ -7,7 +7,6 @@ import lombok.EqualsAndHashCode;
 import net.aibote.sdk.dto.OCRResult;
 import net.aibote.sdk.dto.Point;
 import net.aibote.sdk.options.GesturePath;
-import net.aibote.sdk.options.Mode;
 import net.aibote.sdk.options.Region;
 import net.aibote.sdk.options.SubColor;
 import org.apache.commons.io.FileUtils;
@@ -103,16 +102,15 @@ public abstract class AndroidBot extends AiBot {
      * @param thresh        阈值。threshold默认保存原图。thresh和maxval同为255时灰度处理
      * @param maxval        最大值。threshold默认保存原图。thresh和maxval同为255时灰度处理
      * @param multi         找图数量，默认为1 找单个图片坐标
-     * @param mode          操作模式，后台 true，前台 false。默认前台操作。hwndOrBigImagePath为图片文件，此参数无效
      * @return 成功返回 单坐标点[{x:number, y:number}]，多坐标点[{x1:number, y1:number}, {x2:number, y2:number}...] 失败返回null
      */
-    public String findImages(String imagePath, Region region, float sim, int thresholdType, int thresh, int maxval, int multi, Mode mode) {
+    public String findImages(String imagePath, Region region, float sim, int thresholdType, int thresh, int maxval, int multi) {
         if (thresholdType == 5 || thresholdType == 6) {
             thresh = 127;
             maxval = 255;
         }
 
-        return this.strDelayCmd("findImage", imagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi), mode.boolValueStr());
+        return this.strDelayCmd("findImage", imagePath, Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Integer.toString(multi));
     }
 
     /**
@@ -134,10 +132,9 @@ public abstract class AndroidBot extends AiBot {
      * @param subColors    辅助定位的其他颜色；
      * @param region       在指定区域内找色，默认全屏；
      * @param sim          相似度。0.0-1.0，sim默认为1
-     * @param mode         后台 true，前台 false。默认前台操作。
      * @return String 成功返回 x|y 失败返回null
      */
-    public String findColor(String strMainColor, SubColor[] subColors, Region region, float sim, Mode mode) {
+    public String findColor(String strMainColor, SubColor[] subColors, Region region, float sim) {
         StringBuilder subColorsStr = new StringBuilder();
         if (null != subColors) {
             SubColor subColor;
@@ -152,7 +149,7 @@ public abstract class AndroidBot extends AiBot {
             }
         }
 
-        return this.strDelayCmd("findColor", strMainColor, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
+        return this.strDelayCmd("findColor", strMainColor, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim));
     }
 
     /**
@@ -164,10 +161,9 @@ public abstract class AndroidBot extends AiBot {
      * @param subColors    辅助定位的其他颜色；
      * @param region       截图区域 默认全屏
      * @param sim          相似度，0-1 的浮点数
-     * @param mode         操作模式，后台 true，前台 false,
      * @return boolean
      */
-    public boolean compareColor(int mainX, int mainY, String mainColorStr, SubColor[] subColors, Region region, float sim, Mode mode) {
+    public boolean compareColor(int mainX, int mainY, String mainColorStr, SubColor[] subColors, Region region, float sim) {
         StringBuilder subColorsStr = new StringBuilder();
         if (null != subColors) {
             SubColor subColor;
@@ -181,7 +177,7 @@ public abstract class AndroidBot extends AiBot {
                 }
             }
         }
-        return this.booleanDelayCmd("compareColor", Integer.toString(mainX), Integer.toString(mainY), mainColorStr, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim), mode.boolValueStr());
+        return this.booleanDelayCmd("compareColor", Integer.toString(mainX), Integer.toString(mainY), mainColorStr, subColorsStr.toString(), Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Float.toString(sim));
     }
 
     /**
@@ -495,10 +491,11 @@ public abstract class AndroidBot extends AiBot {
      *
      * @param yoloServerIp yolo服务器IP。端口固定为9528
      * @param modelPath    模型路径
+     * @param classesPath  种类路径，CPU模式需要此参数
      * @return {Promise.<boolean>} 总是返回true
      */
-    public boolean initYolo(String yoloServerIp, String modelPath) {
-        return this.booleanCmd("initYolo", yoloServerIp, modelPath);
+    public boolean initYolo(String yoloServerIp, String modelPath, String classesPath) {
+        return this.booleanCmd("initYolo", yoloServerIp, modelPath, classesPath);
     }
 
     /**
@@ -983,12 +980,12 @@ public abstract class AndroidBot extends AiBot {
     /**
      * 创建EditText控件
      *
-     * @param id       控件ID，不可与其他控件重复
-     * @param hintText 提示文本
-     * @param x        控件在屏幕上x坐标
-     * @param y        控件在屏幕上y坐标
-     * @param width    控件宽度
-     * @param height   控件高度
+     * @param id     控件ID，不可与其他控件重复
+     * @param text   提示文本
+     * @param x      控件在屏幕上x坐标
+     * @param y      控件在屏幕上y坐标
+     * @param width  控件宽度
+     * @param height 控件高度
      * @return {Promise.<boolean>} 成功返回true，失败返回 false
      */
     public boolean createEditText(int id, String text, int x, int y, int width, int height) {
@@ -1062,9 +1059,7 @@ public abstract class AndroidBot extends AiBot {
         else return JSONObject.parse(strRet);
     }
 
-    //hid 使用 port = 56668;//固定端口
-
-    /**
+     /**
      * 初始化android Accessory，获取手机hid相关的数据。
      *
      * @return boolean
@@ -1073,4 +1068,5 @@ public abstract class AndroidBot extends AiBot {
         return this.booleanCmd("initAccessory");
     }
 
+    //hid 使用 port = 56668;//固定端口
 }

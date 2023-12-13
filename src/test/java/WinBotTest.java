@@ -1,10 +1,6 @@
 import net.aibote.sdk.WinBot;
-import net.aibote.sdk.dto.OCRResult;
 import net.aibote.sdk.options.Mode;
-import net.aibote.sdk.options.Region;
 import net.aibote.server.WinBoteServer;
-
-import java.util.List;
 
 public class WinBotTest extends WinBot {
 
@@ -17,25 +13,25 @@ public class WinBotTest extends WinBot {
 
     @Override
     public void webMain() {
-        this.sleep(5000); //启动后静默5秒
-        System.out.println("1111111111111111");
-        boolean b = this.initOcr("192.168.109.1", 9527, false, true, false);
-        //boolean b = this.initOcr("127.0.0.1", 9527, false, false, false);
-        System.out.println("====" + b);
-        Region region = new Region();
-        region.left = 0;
-        region.top = 1;
-        region.right = 1153;
-        region.bottom = 637;
-        List<OCRResult> list = this.ocrByHwnd("722978", region, 5, 0, 0, Mode.front);
-        StringBuilder words = new StringBuilder();
-        if (list != null) {
-            list.forEach((obj) -> {
-                words.append(obj.word).append("\n");
-            });
-            System.out.println(words);
-        }
-        System.out.println("------------------");
+//        this.sleep(5000); //启动后静默5秒
+//        System.out.println("1111111111111111");
+//        boolean b = this.initOcr("192.168.109.1", 9527, false, true, false);
+//        //boolean b = this.initOcr("127.0.0.1", 9527, false, false, false);
+//        System.out.println("====" + b);
+//        Region region = new Region();
+//        region.left = 0;
+//        region.top = 1;
+//        region.right = 1153;
+//        region.bottom = 637;
+//        List<OCRResult> list = this.ocrByHwnd("722978", region, 5, 0, 0, Mode.front);
+//        StringBuilder words = new StringBuilder();
+//        if (list != null) {
+//            list.forEach((obj) -> {
+//                words.append(obj.word).append("\n");
+//            });
+//            System.out.println(words);
+//        }
+//        System.out.println("------------------");
 //        String elementHwnd = this.getElementWindow("525472", "Window/Edit");
 //        System.out.println("elementHwnd = " + elementHwnd); //应返回 526026
 //        this.clickMouse("525472", 389, 73, 1, Mode.backed, elementHwnd);
@@ -49,12 +45,20 @@ public class WinBotTest extends WinBot {
 //        System.out.println(notepad);
 //        String elementWindow = this.getElementWindow(notepad, "Window/Edit");
 //        this.sendKeysByHwnd(elementWindow, "最小化发送测试");
+
+
+//        boolean b = this.initYolo("192.168.31.246", "E:\\aibote\\YoloServer\\models\\yolov8n.onnx");
+//        System.out.println(b);
+//        JSONArray objects = this.yoloByFile("E:\\aibote\\002.jpeg");
+//        System.out.println(objects.toJSONString());
+//
 //        try {
 //            Thread.sleep(1000);
 //        } catch (InterruptedException e) {
 //        }
 
+        this.moveMouse("0",10,10, Mode.front,"0");
 
-        //this.closeDriver();
+        this.closeDriver();
     }
 }
