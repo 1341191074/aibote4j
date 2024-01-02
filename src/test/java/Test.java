@@ -1,4 +1,5 @@
-import com.alibaba.fastjson2.JSONArray;
+import net.aibote.sdk.AndroidBot;
+import net.aibote.sdk.options.Region;
 
 public class Test {
 
@@ -28,6 +29,17 @@ public class Test {
 //        list.forEach((obj) -> {
 //            System.out.println(obj.word);
 //        });
+
+        AndroidBot androidBot = new AndroidBot() {
+            @Override
+            public void webMain() throws RuntimeException {
+                Region region = new Region();
+                this.takeScreenshot(region,0,0,0,0);
+            }
+        };
+
+        androidBot.webMain();
+
 
     }
 }

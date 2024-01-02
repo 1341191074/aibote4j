@@ -71,7 +71,7 @@ public abstract class AndroidBot extends AiBot {
             maxval = 255;
         }
 
-        return this.bytesCmd("saveScreenshot", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Float.toString(scale));
+        return this.bytesCmd("takeScreenshot", Integer.toString(region.left), Integer.toString(region.top), Integer.toString(region.right), Integer.toString(region.bottom), Integer.toString(thresholdType), Integer.toString(thresh), Integer.toString(maxval), Float.toString(scale));
     }
 
     /**
