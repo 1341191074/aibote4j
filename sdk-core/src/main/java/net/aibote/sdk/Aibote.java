@@ -1,6 +1,8 @@
 package net.aibote.sdk;
 
 import io.netty.channel.ChannelHandlerContext;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.StopWatch;
 
 import java.io.ByteArrayOutputStream;
@@ -8,9 +10,12 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.TimeUnit;
 
+@Slf4j
 public abstract class Aibote {
     private final Object lockObj = new Object();//创建一个
     public String runStatus;
+
+    @Setter
     private byte[] retBuffer;
 
     public ChannelHandlerContext aiboteChanel;
@@ -55,6 +60,7 @@ public abstract class Aibote {
         stopwatch.start();
         synchronized (lockObj) {
             while (this.retBuffer == null) {
+                log.info(String.valueOf( stopwatch.getTime(TimeUnit.MILLISECONDS)));
                 if (stopwatch.getTime(TimeUnit.MILLISECONDS) > retTimeout) {
                     break;
                 } else {
