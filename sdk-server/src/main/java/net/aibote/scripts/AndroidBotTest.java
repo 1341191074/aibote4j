@@ -10,8 +10,11 @@ public class AndroidBotTest extends AndroidBot {
 
     @Override
     public void doScript() {
-        this.sleep(5000);//静默5秒
+        this.sleep(3000);//静默5秒
         String androidId = this.getAndroidId();
         System.out.println(androidId);
+
+        String aPackage = this.getWindowSize();
+        System.out.println(aPackage);
     }
 }

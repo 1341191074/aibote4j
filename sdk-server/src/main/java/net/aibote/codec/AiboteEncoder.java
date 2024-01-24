@@ -1,8 +1,10 @@
 package net.aibote.codec;
 
+import io.netty.buffer.ByteBufUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageEncoder;
 
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -32,6 +34,6 @@ public class AiboteEncoder extends MessageToMessageEncoder<String[]> {
 
         strData.append('\n');
         strData.append(tempStr);
-        out.add(strData.toString());
+        out.add(ByteBufUtil.encodeString(ctx.alloc(), CharBuffer.wrap(strData.toString()), this.charset));
     }
 }

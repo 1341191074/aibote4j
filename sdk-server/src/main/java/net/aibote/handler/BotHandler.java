@@ -22,9 +22,7 @@ public abstract class BotHandler extends SimpleChannelInboundHandler<byte[]> {
     public void channelRead0(ChannelHandlerContext ctx, byte[] msg) {
         String channelId = ctx.channel().id().asLongText();
         AiboteChannel aiboteChannel = clientManager.get(channelId);
-        byte[] bytes = (byte[]) msg;
-        System.out.println(new String(bytes, StandardCharsets.UTF_8));
-        ctx.writeAndFlush(new String[]{"i received msg"});
+        aiboteChannel.getAibote().setRetBuffer(msg);
     }
 
     /**

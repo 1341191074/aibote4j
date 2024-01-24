@@ -12,7 +12,7 @@ public class App {
         });
         t1.start();
 
-        Thread t2 = new Thread(() -> {
+        /*Thread t2 = new Thread(() -> {
             WebServer.getInstance().start();
         });
         t2.start();
@@ -20,7 +20,7 @@ public class App {
         Thread t3 = new Thread(() -> {
             WinServer.getInstance().start();
         });
-        t3.start();
+        t3.start();*/
 
         Thread scriptManager = Thread.ofVirtual().unstarted(new ScriptManager());
         scriptManager.start();
