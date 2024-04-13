@@ -1198,6 +1198,28 @@ public abstract class WinBot extends Aibote {
 
 
     /**
+     * 数字人说话文件缓存模式
+     *
+     * @param {string}  audioPath, 音频路径， 同名的 .lab文件需要和音频文件在同一目录下
+     * @param {boolean} waitPlaySound，等待音频播报完毕， true等待/false不等待
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean metahumanSpeechByFile(String audioPath, boolean waitPlaySound) {
+        return boolCmd("metahumanSpeechByFile", audioPath, Boolean.toString(waitPlaySound));
+    }
+
+    /**
+     * `
+     * 打断数字人说话，一般用作人机对话场景。
+     * metahumanSpeech和metahumanSpeechCache的 waitPlaySound 参数 设置为false时，此函数才有意义
+     *
+     * @return {Promise.<boolean>} 返回true打断正在说话， 返回false 则为未说话状态
+     */
+    public boolean metahumanSpeechBreak() {
+        return boolCmd("metahumanSpeechBreak");
+    }
+
+    /**
      * 数字人插入视频
      *
      * @param videoFilePath  插入的视频文件路径
@@ -1316,6 +1338,96 @@ public abstract class WinBot extends Aibote {
      */
     public boolean makeMetahumanVideoClone(String saveVideoFolder, String text, String language, String bgFilePath, int simValue) {
         return boolCmd("makeMetahumanVideoClone", saveVideoFolder, text, language, bgFilePath, Integer.toString(simValue));
+    }
+
+    /**
+     * 生成数字人短视频，此函数需要调用 initSpeechService 初始化语音服务
+     *
+     * @param {string} saveVideoFolder, 保存的视频目录
+     * @param {string} text,要转换语音的文本
+     * @param {string} language，语言，参考开发文档 语言和发音人
+     * @param {string} voiceName，发音人，参考开发文档 语言和发音人
+     * @param {string} bgFilePath,数字人背景 图片/视频 路径，扣除绿幕会自动获取绿幕的RGB值，null 则不替换背景。仅替换绿幕背景的数字人模型
+     * @param {number} simValue, 相似度，默认为0。此处参数用作绿幕扣除微调RBG值。取值应当大于等于0
+     * @param {string} voiceStyle，语音风格，默认General常规风格，其他风格参考开发文档 语言和发音人
+     * @param {number} quality，音质，0低品质  1中品质  2高品质， 默认为0低品质
+     * @param {number} speechRate， 语速，默认为0，取值范围 -100 至 200
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean makeMetahumanVideo(String saveVideoFolder, String text, String language, String voiceName, String bgFilePath, int simValue, String voiceStyle, int quality, int speechRate) {
+        if (StringUtils.isBlank(voiceStyle)) {
+            voiceStyle = "General";
+        }
+        return boolCmd("makeMetahumanVideo", saveVideoFolder, text, language, voiceName, bgFilePath, Integer.toString(simValue), voiceStyle, Integer.toString(quality), Integer.toString(speechRate));
+    }
+
+    /**
+     * 生成数字人说话文件，生成MP3文件和 lab文件，提供给 metahumanSpeechByFile 和使用
+     *
+     * @param {string} saveAudioPath, 保存的音频文件路径，扩展为.MP3格式。同名的 .lab文件需要和音频文件在同一目录下
+     * @param {string} text,要转换语音的文本
+     * @param {string} language，语言，参考开发文档 语言和发音人
+     * @param {string} voiceName，发音人，参考开发文档 语言和发音人
+     * @param {number} quality，音质，0低品质  1中品质  2高品质， 默认为0低品质
+     * @param {number} speechRate， 语速，默认为0，取值范围 -100 至 200
+     * @param {string} voiceStyle，语音风格，默认General常规风格，其他风格参考开发文档 语言和发音人
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean makeMetahumanSpeechFile(String saveAudioPath, String text, String language, String voiceName, int quality, int speechRate, String voiceStyle) {
+        if (StringUtils.isBlank(voiceStyle)) {
+            voiceStyle = "General";
+        }
+        return boolCmd("makeMetahumanVideo", saveAudioPath, text, language, voiceName, Integer.toString(quality), Integer.toString(speechRate), voiceStyle);
+    }
+
+    /**
+     * 初始化数字人声音克隆服务
+     *
+     * @param {string} apiKey, API密钥
+     * @param {string} voiceId, 声音ID
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean initSpeechCloneService(String apiKey, String voiceId) {
+        return boolCmd("initSpeechCloneService", apiKey, voiceId);
+    }
+
+    /**
+     * 数字人使用克隆声音说话，此函数需要调用 initSpeechCloneService 初始化语音服务
+     *
+     * @param {string}  saveAudioPath, 保存的发音文件路径。这里是路径，不是目录！
+     * @param {string}  text,要转换语音的文本
+     * @param {string}  language，语言，中文：zh-cn，其他语言：other-languages
+     * @param {boolean} waitPlaySound，等待音频播报完毕，  true等待/false不等待
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean metahumanSpeechClone(String saveAudioPath, String text, String language, boolean waitPlaySound) {
+        return boolCmd("initSpeechCloneService", saveAudioPath, text, language, Boolean.toString(waitPlaySound));
+    }
+
+    /**
+     * 使用克隆声音生成数字人短视频，此函数需要调用 initSpeechCloneService 初始化语音服务
+     *
+     * @param {string} saveVideoFolder, 保存的视频和音频文件目录
+     * @param {string} text,要转换语音的文本
+     * @param {string} language，语言，中文：zh-cn，其他语言：other-languages
+     * @param {string} bgFilePath,数字人背景 图片/视频 路径，扣除绿幕会自动获取绿幕的RGB值，null 则不替换背景。仅替换绿幕背景的数字人模型
+     * @param {number} simValue, 相似度，默认为0。此处参数用作绿幕扣除微调RBG值。取值应当大于等于0
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean makeMetahumanVideoClone(String saveVideoFolder, String text, String language, String bgFilePath, int simValue) {
+        return boolCmd("makeMetahumanVideoClone", saveVideoFolder, text, language, bgFilePath, Integer.toString(simValue));
+    }
+
+    /**
+     * 生成数字人说话文件(声音克隆)，生成MP3文件和 lab文件，提供给 metahumanSpeechByFile 和使用
+     *
+     * @param {string} saveAudioPath, 保存的发音文件路径。这里是路径，不是目录！
+     * @param {string} text,要转换语音的文本
+     * @param {string} language，语言，中文：zh-cn，其他语言：other-languages
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean makeMetahumanSpeechFileClone(String saveAudioPath, String text, String language) {
+        return boolCmd("makeMetahumanSpeechFileClone", saveAudioPath, text, language);
     }
 
     /**

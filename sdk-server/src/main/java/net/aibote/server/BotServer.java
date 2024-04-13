@@ -9,7 +9,6 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.handler.codec.string.StringEncoder;
 import lombok.extern.slf4j.Slf4j;
 import net.aibote.codec.AiboteDecoder;
 import net.aibote.codec.AiboteEncoder;
@@ -34,7 +33,7 @@ public abstract class BotServer {
                         protected void initChannel(SocketChannel ch) throws Exception {
                             ChannelPipeline pipeline = ch.pipeline();
                             pipeline.addLast("decoder", new AiboteDecoder());
-                            pipeline.addLast("encoder1", new AiboteEncoder());
+                            pipeline.addLast("encoder", new AiboteEncoder());
                             //pipeline.addLast("encoder", new StringEncoder());
                             handlers(pipeline);//注入自定义处理类
                         }
