@@ -284,6 +284,15 @@ public abstract class WebBot extends Aibote {
         return boolCmd("uploadFile", xpath, uploadFiles);
     }
 
+    /**显示元素xpath路径，页面加载完毕再调用。
+     * 调用此函数后，可在页面移动鼠标会显示元素区域。移动并按下ctrl键，会在浏览器控制台打印相对xpath 和 绝对xpath路径
+     * ifrmae 内的元素，需要先调用 switchFrame 切入进去，再调用showXpath函数
+     * @return {Promise.<boolean>} 总是返回true
+     */
+    public boolean showXpath(){
+        return boolCmd("showXpath");
+    }
+
     /**
      * 输入文本
      *

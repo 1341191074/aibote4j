@@ -729,8 +729,7 @@ public abstract class AndroidBot extends Aibote {
         String[] split = windowRect.split("\\|");
         int elementWidth = elementRect.right - elementRect.left;
         int elementHeight = elementRect.bottom - elementRect.top;
-        if (elementRect.top < 0 || elementRect.left < 0 || elementWidth > Integer.parseInt(split[0]) || elementHeight > Integer.parseInt(split[1]))
-            return false;
+        if (elementRect.top < 0 || elementRect.left < 0 || elementWidth > Integer.parseInt(split[0]) || elementHeight > Integer.parseInt(split[1])) return false;
         else return true;
     }
 
@@ -808,6 +807,17 @@ public abstract class AndroidBot extends Aibote {
     public void pullFile(String androidFilePath, String windowsFilePath) throws IOException {
         byte[] byteData = this.bytesCmd("pullFile", androidFilePath);
         FileUtils.writeByteArrayToFile(new File(windowsFilePath), byteData, true);
+    }
+
+    /**
+     * GET 下载url文件
+     *
+     * @param {string} url 文件请求地址
+     * @param {string} savePath 安卓文件路径，安卓外部存储根目录 /storage/emulated/0/
+     * @return {Promise.<boolean>} 成功返回true，失败返回 false
+     */
+    public boolean downloadFile(String url, String savePath) {
+        return this.boolCmd("downloadFile", url, savePath);
     }
 
     /**
