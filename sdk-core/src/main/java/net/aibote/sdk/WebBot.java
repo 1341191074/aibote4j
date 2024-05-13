@@ -284,12 +284,14 @@ public abstract class WebBot extends Aibote {
         return boolCmd("uploadFile", xpath, uploadFiles);
     }
 
-    /**显示元素xpath路径，页面加载完毕再调用。
+    /**
+     * 显示元素xpath路径，页面加载完毕再调用。
      * 调用此函数后，可在页面移动鼠标会显示元素区域。移动并按下ctrl键，会在浏览器控制台打印相对xpath 和 绝对xpath路径
      * ifrmae 内的元素，需要先调用 switchFrame 切入进去，再调用showXpath函数
+     *
      * @return {Promise.<boolean>} 总是返回true
      */
-    public boolean showXpath(){
+    public boolean showXpath() {
         return boolCmd("showXpath");
     }
 
@@ -689,6 +691,16 @@ public abstract class WebBot extends Aibote {
      */
     public boolean touchEnd(int x, int y) {
         return boolCmd("touchEnd", Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * 激活框架
+     *
+     * @param {string} activateKey, 激活密钥，联系管理员
+     * @return {Promise.<boolean>} 返回激活信息
+     */
+    public boolean activateFrame(String activateKey) {
+        return boolCmd("'activateFrame'", activateKey);
     }
 
 }
