@@ -1380,6 +1380,13 @@ public abstract class WinBot extends Aibote {
         return strCmd("getExtendParam");
     }
 
+    /**获取Windows ID
+     * @return {Promise.<string>} 成功返回Windows ID
+     */
+    public String getWindowsId(){
+        return strCmd("getWindowsId");
+    }
+
     /**
      * 关闭驱动
      *
