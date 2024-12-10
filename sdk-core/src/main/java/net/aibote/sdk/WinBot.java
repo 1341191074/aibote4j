@@ -1152,8 +1152,8 @@ public abstract class WinBot extends Aibote {
      * @param isUpdateMetahuman,   是否强制更新，默认fasle。为true时强制更新会拖慢初始化速度
      * @return {Promise.<boolean>} 成功返回true，失败返回false
      */
-    public boolean initMetahuman(String metahumanModePath, float metahumanScaleValue, boolean isUpdateMetahuman) {
-        return boolCmd("initMetahuman", metahumanModePath, Float.toString(metahumanScaleValue), Boolean.toString(isUpdateMetahuman));
+    public boolean initMetahuman(String metahumanModePath, float metahumanScaleValue, boolean isUpdateMetahuman, boolean enableRandomImage) {
+        return boolCmd("initMetahuman", metahumanModePath, Float.toString(metahumanScaleValue), Boolean.toString(isUpdateMetahuman), Boolean.toString(enableRandomImage));
     }
 
     /**
