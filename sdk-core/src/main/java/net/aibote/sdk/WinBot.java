@@ -1473,6 +1473,96 @@ public abstract class WinBot extends Aibote {
     }
 
     /**
+     * 切换声音克隆模型
+     *
+     * @param {string} cloneServerIp, 克隆声音服务端
+     * @param {string} gptWeightsPath, gpt 模型权重路径。指克隆服务所在的电脑/服务器 路径
+     * @param {string} sovitsWeightsPath, sovits 模型权重路径。指克隆服务所在的电脑/服务器 路径
+     * @return {Promise.<boolean>} 失败返回false,成功返回true。 切换到与原模型无关音色的模型，切记更换参考音频和文本
+     */
+    public boolean switchCloneAudioModel(String cloneServerIp, String gptWeightsPath, String sovitsWeightsPath) {
+        return this.boolCmd("switchCloneAudioModel", cloneServerIp, gptWeightsPath, sovitsWeightsPath);
+    }
+
+    /**
+     * 重启声音克隆服务
+     *
+     * @param {string} cloneServerIp, 克隆声音服务端
+     * @return {Promise.<boolean>} 失败返回false,成功返回true。重启服务会中断连接，实际并未准确返回值。重启后模型加载需要时间，调用此函数需显示等待几秒，再去访问声音克隆服务
+     */
+    public boolean restartCloneAudioServer(String cloneServerIp) {
+        return this.boolCmd("restartCloneAudioServer", cloneServerIp);
+    }
+
+    /**
+     * 克隆声音，需要部署服务端
+     *
+     * @param {string} cloneServerIp, 克隆声音服务端
+     * @param {string} saveAudioPath, 保存克隆声音的路径
+     * @param {string} referAudioPath, 参考音频路径，3-10秒，音频时长不能大于等于10秒
+     * @param {string} referText, 参考音频对应的文本
+     * @param {string} cloneText, 要克隆的文本
+     * @param {number} speedFactor, 语速（0.5为半速，1.0为正常速度，1.5为1.5倍速，以此类推）。默认为1.0 正常语速
+     * @return {Promise.<boolean>} 失败返回false,成功返回true
+     */
+    public boolean makeCloneAudio(String cloneServerIp, String saveAudioPath, String referAudioPath, String referText, String cloneText, float speedFactor) {
+        if (speedFactor <= 0) {
+            speedFactor = 1.0F;
+        }
+        return this.boolCmd("makeCloneAudio", cloneServerIp, saveAudioPath, referAudioPath, referText, cloneText, String.valueOf(speedFactor));
+    }
+
+    /**
+     * 播报音频文件
+     *
+     * @param {string}  audioPath, 音频文件路径
+     * @param {boolean} isWait, 是否等待.为true时,等待播放完毕
+     * @return {Promise.<boolean>} 失败返回false,成功返回true
+     */
+    public boolean playAudio(String audioPath, boolean isWait) {
+        return this.boolCmd("playAudio", audioPath, Boolean.toString(isWait));
+    }
+
+    /**
+     * 播报视频文件
+     *
+     * @param {string}  videoPath, 视频文件路径 (多个视频切换播放 视频和音频编码必须一致)
+     * @param {number}  videoSacle, 视频缩放（0.5缩小一半，1.0为原始大小）
+     * @param {boolean} isLoopPlay, 是否循环播放
+     * @param {boolean} enableRandomParam, 是否启用随机去重参数
+     * @param {boolean} isWait, 是否等待播报完毕。 值为false时，不等待播放结束。未播报结束前再次调用此函数 会终止前面的播报内容
+     * @return {Promise.<boolean>} 失败返回false,成功返回true。
+     */
+    public boolean playMedia(String videoPath, float videoSacle, boolean isLoopPlay, boolean enableRandomParam, boolean isWait) {
+        if (videoSacle <= 0) {
+            videoSacle = 1.0F;
+        }
+        return this.boolCmd("playMedia", videoPath, Float.toString(videoSacle), Boolean.toString(isLoopPlay), Boolean.toString(enableRandomParam), Boolean.toString(isWait));
+    }
+
+    /**
+     * 生成lab文件，需要部署服务端
+     *
+     * @param {string} labServerIp, lab服务端IP
+     * @param {string} audioPath, 音频文件
+     * @return {Promise.<boolean>} 失败返回false,成功返回true 并生成 与 audioPath 同目录下的 .lab 后缀文件。(音频文件+lab文件可以直接驱动数字人)
+     */
+    public boolean makeCloneLab(String labServerIp, String audioPath) {
+        return this.boolCmd("makeCloneLab", labServerIp, audioPath);
+    }
+
+    /**
+     * 语音识别，需要部署服务端
+     *
+     * @param {string} labServerIp, lab服务端IP
+     * @param {string} audioPath, 音频文件
+     * @return {Promise.<boolean>} 失败返回null, 成功返回识别到的内容
+     */
+    public boolean cloneAudioToText(String labServerIp, String audioPath) {
+        return this.boolCmd("cloneAudioToText", labServerIp, audioPath);
+    }
+
+    /**
      * 关闭驱动
      *
      * @return boolean
