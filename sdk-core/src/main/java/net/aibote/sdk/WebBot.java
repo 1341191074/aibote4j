@@ -643,6 +643,16 @@ public abstract class WebBot extends Aibote {
     }
 
     /**
+     * 设置浏览器下载目录
+     *
+     * @param downloadDir 存放下载的目录
+     * @return 成功返回true，失败返回false
+     */
+    public boolean setDownloadDir(String downloadDir) {
+        return boolCmd("setDownloadDir", downloadDir);
+    }
+
+    /**
      * 关闭浏览器
      *
      * @return boolean

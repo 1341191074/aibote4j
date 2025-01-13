@@ -1208,6 +1208,19 @@ public abstract class WinBot extends Aibote {
         return boolCmd("metahumanSpeechByFile", audioPath, Boolean.toString(waitPlaySound));
     }
 
+
+    /**
+     * 数字人说话文件缓存模式(Ex) metahumanSpeechByFileEx 不能与 PlayAudioEx 同步执行
+     *
+     * @param {string}  audioPath, 音频路径， 同名的 .lab文件需要和音频文件在同一目录下。若.lab文件不存在，则自动生成.lab文件。生成.lab文件产生的费用，请联系管理员
+     * @param {boolean} enableRandomParam, 是否启用随机去重参数
+     * @param {boolean} waitPlaySound，等待音频播报完毕，默认为 false等待。为false时 多次调用此函数会添加到队列按顺序播报
+     * @return {Promise.<boolean>} 成功返回true，失败返回false
+     */
+    public boolean metahumanSpeechByFileEx(String audioPath, boolean enableRandomParam, boolean waitPlaySound) {
+        return boolCmd("metahumanSpeechByFileEx", audioPath, Boolean.toString(enableRandomParam), Boolean.toString(waitPlaySound));
+    }
+
     /**
      * `
      * 打断数字人说话，一般用作人机对话场景。
@@ -1524,6 +1537,18 @@ public abstract class WinBot extends Aibote {
     }
 
     /**
+     * 播报音频文件(EX)，playAudioEx 不能与 metahumanSpeechByFileEx 同步执行
+     *
+     * @param {string}  audioPath, 音频文件路径
+     * @param {boolean} enableRandomParam, 是否启用随机去重参数
+     * @param {boolean} isWait, 是否等待.为true时,等待播放完毕
+     * @return {Promise.<boolean>} 总是返回true，函数仅添加播放音频文件到队列不处理返回
+     */
+    public boolean playAudioEx(String audioPath, boolean enableRandomParam, boolean isWait) {
+        return this.boolCmd("playAudioEx", audioPath, Boolean.toString(enableRandomParam), Boolean.toString(isWait));
+    }
+
+    /**
      * 播报视频文件
      *
      * @param {string}  videoPath, 视频文件路径 (多个视频切换播放 视频和音频编码必须一致)
@@ -1538,6 +1563,16 @@ public abstract class WinBot extends Aibote {
             videoSacle = 1.0F;
         }
         return this.boolCmd("playMedia", videoPath, Float.toString(videoSacle), Boolean.toString(isLoopPlay), Boolean.toString(enableRandomParam), Boolean.toString(isWait));
+    }
+
+    /**
+     * 调节 playMedia 音量大小(底层用的内存共享，支持多进程控制)
+     *
+     * @param {number} volumeScale, 音量缩放（0.5调低一半，1.0为原始音量大小）。默认为原始大小
+     * @return {Promise.<boolean>} 失败返回false,成功返回true。
+     */
+    public boolean setMediaVolumeScale(float volumeScale) {
+        return this.boolCmd("setMediaVolumeScale", Float.toString(volumeScale));
     }
 
     /**
