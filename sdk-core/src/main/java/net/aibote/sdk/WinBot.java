@@ -1414,7 +1414,7 @@ public abstract class WinBot extends Aibote {
      * @return {Promise.<boolean>} 成功返回true，失败返回false
      */
     public boolean metahumanSpeechClone(String saveAudioPath, String text, String language, boolean waitPlaySound) {
-        return boolCmd("initSpeechCloneService", saveAudioPath, text, language, Boolean.toString(waitPlaySound));
+        return boolCmd("metahumanSpeechClone", saveAudioPath, text, language, Boolean.toString(waitPlaySound));
     }
 
     /**
