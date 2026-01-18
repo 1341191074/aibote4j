@@ -3,6 +3,11 @@ package net.aibote.sdk;
 import com.alibaba.fastjson2.JSONObject;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import net.aibote.sdk.dto.OCRResult;
+import net.aibote.sdk.dto.Point;
+import net.aibote.sdk.options.Mode;
+import net.aibote.sdk.options.Region;
+import net.aibote.sdk.options.SubColor;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
@@ -12,7 +17,22 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public abstract class WebBot extends AiBot {
+public abstract class WebBot extends AbstractPlatformBot {
+
+    @Override
+    public String getPlatformName() {
+        return "Web";
+    }
+
+    @Override
+    protected void platformInitialize() {
+        // Web平台特定的初始化
+    }
+
+    @Override
+    protected void platformCleanup() {
+        // Web平台特定的清理
+    }
 
     /**
      * 导航至 url
@@ -651,39 +671,6 @@ public abstract class WebBot extends AiBot {
      */
     public boolean closeDriver() {
         return booleanCmd("closeDriver");
-    }
-
-    /**
-     * 仿真模式 开始触屏
-     *
-     * @param x x坐标
-     * @param y y坐标
-     * @return
-     */
-    public boolean touchStart(int x, int y) {
-        return booleanCmd("touchStart", Integer.toString(x), Integer.toString(y));
-    }
-
-    /**
-     * 仿真模式 移动触屏
-     *
-     * @param x x坐标
-     * @param y y坐标
-     * @return
-     */
-    public boolean touchMove(int x, int y) {
-        return booleanCmd("touchMove", Integer.toString(x), Integer.toString(y));
-    }
-
-    /**
-     * 仿真模式 结束触屏
-     *
-     * @param x x坐标
-     * @param y y坐标
-     * @return
-     */
-    public boolean touchEnd(int x, int y) {
-        return booleanCmd("touchEnd", Integer.toString(x), Integer.toString(y));
     }
 
 }

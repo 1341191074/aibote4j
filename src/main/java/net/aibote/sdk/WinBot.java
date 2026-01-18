@@ -18,7 +18,22 @@ import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class WinBot extends AiBot {
+public abstract class WinBot extends AbstractPlatformBot {
+
+    @Override
+    public String getPlatformName() {
+        return "Windows";
+    }
+
+    @Override
+    protected void platformInitialize() {
+        // Windows平台特定的初始化
+    }
+
+    @Override
+    protected void platformCleanup() {
+        // Windows平台特定的清理
+    }
 
     /**
      * 查找窗口句柄

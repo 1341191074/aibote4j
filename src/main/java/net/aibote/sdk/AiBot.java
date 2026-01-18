@@ -1,6 +1,8 @@
 package net.aibote.sdk;
 
 import lombok.Getter;
+import net.aibote.sdk.protocol.CommunicationProtocol;
+import net.aibote.sdk.protocol.ProtocolFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.yaml.snakeyaml.Yaml;
@@ -8,6 +10,7 @@ import org.yaml.snakeyaml.Yaml;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.Socket;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
@@ -24,6 +27,9 @@ public abstract class AiBot implements Runnable {
     @Getter
     private String keyId = null;
     protected Map<String, Object> ymlConfig = null;
+    
+    // 通信协议策略
+    protected CommunicationProtocol communicationProtocol = ProtocolFactory.getDefaultProtocol();
 
     public AiBot() {
         Yaml yaml = new Yaml();
@@ -140,33 +146,14 @@ public abstract class AiBot implements Runnable {
 
     private byte[] sendBytes(byte[] inputBytes) {
         try {
-            this.clientCocket.getOutputStream().write(inputBytes);
-            this.clientCocket.getOutputStream().flush();
-
-            InputStream inputStream = clientCocket.getInputStream();
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            int readData = -1;
-            while ((readData = inputStream.read()) != -1) {
-                // 读取包结构，数据采用/分割。 返回数据格式为: dataLength/bytes
-                if (readData != 47) { // 47为结构中的/
-                    byteArrayOutputStream.write(readData);
-                } else {
-                    break; //读到分割符后跳出
-                }
-            }
-            int dataLen = Integer.parseInt(byteArrayOutputStream.toString());
-            byteArrayOutputStream.reset();//重置
-
-            if (dataLen > 0) {
-                byte[] bytes = new byte[1024];
-                int readLine = inputStream.read(bytes);
-                byteArrayOutputStream.write(bytes, 0, readLine);//写入真实数据。根据实际读入长度写入数据。最大写入1024字节。
-                while (dataLen > byteArrayOutputStream.toByteArray().length) {//如果包长度大于真实数据，则继续读取。
-                    readLine = inputStream.read(bytes);
-                    byteArrayOutputStream.write(bytes, 0, readLine);
-                }
-            }
-            return byteArrayOutputStream.toByteArray();
+            OutputStream outputStream = this.clientCocket.getOutputStream();
+            InputStream inputStream = this.clientCocket.getInputStream();
+            
+            // 使用策略模式发送数据
+            communicationProtocol.sendData(outputStream, inputBytes);
+            
+            // 使用策略模式接收数据
+            return communicationProtocol.receiveData(inputStream);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

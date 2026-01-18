@@ -20,7 +20,22 @@ import java.util.Optional;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class AndroidBot extends AiBot {
+public abstract class AndroidBot extends AbstractPlatformBot {
+
+    @Override
+    public String getPlatformName() {
+        return "Android";
+    }
+
+    @Override
+    protected void platformInitialize() {
+        // Android平台特定的初始化
+    }
+
+    @Override
+    protected void platformCleanup() {
+        // Android平台特定的清理
+    }
 
     /**
      * 截图保存<br />
@@ -1066,6 +1081,15 @@ public abstract class AndroidBot extends AiBot {
      */
     public boolean initAccessory() {
         return this.booleanCmd("initAccessory");
+    }
+
+    /**
+     * 关闭驱动
+     *
+     * @return boolean
+     */
+    public boolean closeDriver() {
+        return booleanCmd("closeDriver");
     }
 
     //hid 使用 port = 56668;//固定端口

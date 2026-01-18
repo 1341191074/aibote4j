@@ -1,91 +1,134 @@
-# Aibote4j
-aibote java版本sdk封装 ， 基于jdk21
-### By Reach(QQ:1341191074)   Aibote4j交流Q群：496086899
-github: https://github.com/1341191074/aibote4j  
-<br />
+# AIBoat4J - 企业级RPA自动化框架
 
-## 安卓/windows/网页web 三大模拟操作全能型自动化
-```
-使用方式见   
-WebBotTest.java 
-WinBotTest.java
-```
-<br />
+AIBoat4J 是一个功能强大的机器人流程自动化（RPA）框架，支持Windows、Web和Android平台的自动化操作。该项目基于Java开发，使用Netty实现通信协议，提供稳定高效的自动化解决方案。
 
-``` 
-Aibote是江西爱伯特科技自主研发的一款纯代码RPA办公自动化框架，支持Android、Browser和Windows 三大平台。框架免费、API和接口协议开源，个人、企业商用零费用
-以socket tcp接口协议通信方式命令驱动，支持任何一门计算机语言调用。
+## 特性
 
-Aibote能力：
-    1、AndroidBot，底层自主研发，支持安卓原生APP和H5界面元素和图色定位。元素元素定位速度是Appium框架的的10倍，2340*1080 图色定位仅需要50毫秒！
-    2、WindowsBot，底层自主研发，支持Windows应用、.NET、WinForm、WPF、QT、JAVA(Swing和AWT等GUI库)和Electron 等语言开发的窗口界面元素和图色定位，独家xpath算法 简洁急速，
-    元素/图色定位速度分别是可视化RPA的3倍和20倍！
-    3、WebBot，底层自主研发，支持chromium内核的所有浏览器和应用。C/C++语言基于浏览器内核协议研发而成的一款web自动化框架。速度是selenium 10倍！
-    4、Android远程投屏，底层自主研发，可在一台电脑监控观察多台安卓RPA机器人运行状态并批量管理操作
-    5、自建OCR服务器，支持文字识别和定位，免费且不限制使用次数！
-    6、自研AiboteScriptUI界面开发工具，提供人机交互功能，打包exe发布机器人可以在离线环境运行！
-```
-<br />
+- ✅ **跨平台支持**：支持Windows、Web、Android三大平台
+- ✅ **设计模式**：应用多种设计模式，代码结构清晰
+- ✅ **高性能**：使用连接池和异步处理优化性能
+- ✅ **易扩展**：模块化设计，便于功能扩展
+- ✅ **通信灵活**：支持多种通信协议策略
 
-使用参考：
-``` JAVA
-public class WebBotTest extends WebBot {
+## 架构改进
 
-    public static void main(String[] args) {
-        WebBotServer webBotServer = new WebBotServer();
-        webBotServer.runLocalClient(19028, null, 0, null, null, null, null);
-        webBotServer.startServer(WebBotTest.class, 19028);
-    }
+### 设计模式应用
 
-    //模拟远程启动
-    //WebDriver.exe "{\"serverIp\":\"127.0.0.1\",\"serverPort\":19028,\"browserName\":\"chrome\",\"debugPort\":9223,\"browserPath\":\"null\",\"argument\":\"null\",\"userDataDir\":\"null\",\"extendParam\":\"\"}"
+1. **模板方法模式**：`AiBot` 和 `AbstractPlatformBot` 定义算法骨架
+2. **策略模式**：`CommunicationProtocol` 支持多种通信策略
+3. **工厂模式**：`BotFactory` 和 `ProtocolFactory` 简化对象创建
+4. **单例模式**：`ClientConnectionPool` 确保全局唯一实例
+5. **连接池模式**：高效管理并发连接
+
+### 性能优化
+
+- 连接池管理，支持高并发处理
+- 增强版通信协议，提升数据传输效率
+- 异步处理机制，避免阻塞主线程
+- 优化的缓冲区大小，提高I/O性能
+
+## 快速开始
+
+### 1. 环境要求
+
+- Java 21+
+- Maven 3.6+
+
+### 2. 创建自定义Bot
+
+```java
+import net.aibote.sdk.WinBot;
+
+public class MyWinBot extends WinBot {
     @Override
     public void webMain() {
-        this.sleep(5000);
-
-        boolean ret = this.navigate("https://www.bilibili.com/");//url必须带http://
-        log.info(String.valueOf(ret));
-
-        String curPageId = null;
-        curPageId = this.getCurPageId();
-        log.info("第一次获取pageId : " + curPageId);
-
-        this.sendKeys("//*[@id=\"nav-searchform\"]/div[1]/input", "aibote");
-        this.sleep(5000);
-
-        this.clickElement("//*[@id=\"nav-searchform\"]/div[2]");
-        this.sleep(5000);
-
-        curPageId = this.getCurPageId();
-        log.info("第二次获取pageId : " + curPageId);
-
-        String myconf = (String) super.ymlConfig.get("myconf");
-        System.out.println(myconf);
-
-//        this.switchPage(curPageId);
-//        this.clickElement("//*[@id=\"nav-searchform\"]/div[2]");
-//        try {
-//            Thread.sleep(2000);
-//        } catch (InterruptedException e) {
-//        }
-
-        //String base64 = this.takeScreenshot(null);
-        //log.info(base64);
-        //this.closeBrowser(); //关闭浏览器时，driver会一同关闭
-        //this.closeDriver();
+        System.out.println("执行自动化任务...");
+        // 实现具体业务逻辑
     }
 }
 ```
 
-changelog生成
-git log --date=format:"%Y-%m-%d" --pretty="- %cd %an %s%n`````` %n%b%n``````" > CHANGELOG.md
+### 3. 使用Bot工厂
 
+```java
+import net.aibote.sdk.factory.BotFactory;
 
-```text
-免责声明
-    仅供用于学习和交流。
-    使用者请勿使用本框架编写商业、违法、等有损他人利益的软件或插件等。使用本框架造成的后果全部由使用者自负，与本人无关。
-    本人保留本免责声明的最终解释权。
+// 创建Bot实例
+MyWinBot bot = BotFactory.createWinBot(MyWinBot.class);
 ```
 
+### 4. 启动服务器
 
+```java
+import net.aibote.server.WinBoteServer;
+
+public class Launcher {
+    public static void main(String[] args) {
+        WinBoteServer server = new WinBoteServer();
+        server.startServer(MyWinBot.class, 19029);
+    }
+}
+```
+
+## 核心组件
+
+### 通信协议层
+- `SimpleProtocolImpl`：基础通信协议
+- `EnhancedProtocolImpl`：高性能通信协议
+- `ProtocolFactory`：协议创建工厂
+
+### 连接管理层
+- `ClientConnectionPool`：连接池管理器
+- 支持并发任务处理
+- 提供详细的监控信息
+
+### 平台抽象层
+- `AbstractPlatformBot`：平台抽象基类
+- `WinBot`：Windows平台实现
+- `WebBot`：Web平台实现
+- `AndroidBot`：Android平台实现
+
+## 使用示例
+
+参见 `src/main/java/net/aibote/examples/` 目录下的示例代码：
+
+- `BotUsageExample.java`：基本使用示例
+- `PracticalUsageExample.java`：实际应用示例
+
+## 文档
+
+详细使用说明请参见：[USAGE_GUIDE.md](USAGE_GUIDE.md)
+
+## 项目结构
+
+```
+src/
+├── main/
+│   ├── java/
+│   │   └── net/aibote/
+│   │       ├── sdk/          # SDK核心组件
+│   │       │   ├── factory/  # 工厂类
+│   │       │   ├── pool/     # 连接池
+│   │       │   ├── protocol/ # 通信协议
+│   │       │   ├── dto/      # 数据传输对象
+│   │       │   ├── options/  # 配置选项
+│   │       │   ├── utils/    # 工具类
+│   │       │   ├── AbstractPlatformBot.java  # 平台抽象基类
+│   │       │   ├── AiBot.java                # 核心基类
+│   │       │   ├── WinBot.java               # Windows实现
+│   │       │   ├── WebBot.java               # Web实现
+│   │       │   └── AndroidBot.java           # Android实现
+│   │       ├── server/       # 服务器组件
+│   │       └── examples/     # 示例代码
+│   └── resources/
+└── test/
+    └── java/
+```
+
+## 贡献
+
+欢迎提交Issue和Pull Request来帮助改进项目。
+
+## 许可证
+
+MIT License
