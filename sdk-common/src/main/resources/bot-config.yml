@@ -1,0 +1,47 @@
+# 机器人配置文件
+
+# 通信配置
+communication:
+  # 默认响应超时时间（毫秒）
+  responseTimeout: 2000
+  # 延迟响应超时时间（毫秒）
+  delayResponseTimeout: 6000
+  # 重试次数
+  retryTimes: 3
+  # 重试间隔（毫秒）
+  retryInterval: 500
+  # 连接池大小
+  connectionPoolSize: 10
+
+# 性能配置
+performance:
+  # 最大并发数
+  maxConcurrency: 100
+  # 线程池大小
+  threadPoolSize: 10
+  # 缓冲区大小
+  bufferSize: 8192
+  # 内存限制（MB）
+  memoryLimit: 512
+
+# 日志配置
+logging:
+  # 日志级别
+  level: INFO
+  # 日志文件大小限制（MB）
+  maxFileSize: 10
+  # 保留天数
+  retentionDays: 7
+  # 是否启用详细日志
+  detailedLogEnabled: false
+
+# 安全配置
+security:
+  # 是否启用认证
+  authEnabled: false
+  # 认证令牌有效期（分钟）
+  tokenExpirationMinutes: 60
+  # 最大连接数限制
+  maxConnections: 1000
+  # IP白名单（留空表示不限制）
+  ipWhitelist: []
