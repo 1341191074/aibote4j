@@ -6,6 +6,6 @@ import net.aibote.handler.ClientManager;
 public class WinHandler extends BotHandler {
     @Override
     public ClientManager getClientManager() {
-        return WinClientManager.getInstance();
+        return ClientManager.getInstance();
     }
 }

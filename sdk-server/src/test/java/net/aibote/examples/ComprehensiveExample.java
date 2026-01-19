@@ -1,6 +1,7 @@
 package net.aibote.examples;
 
 import lombok.extern.slf4j.Slf4j;
+import net.aibote.sdk.AbstractPlatformBot;
 import net.aibote.sdk.factory.BotFactory;
 import net.aibote.sdk.pool.ConnectionPoolManager;
 
@@ -48,9 +49,9 @@ public class ComprehensiveExample extends BaseExample {
             log.info("成功创建了WinBot、WebBot和AndroidBot实例");
 
             // 演示使用不同类型的机器人
-            demonstrateWinBot(winBot);
-            demonstrateWebBot(webBot);
-            demonstrateAndroidBot(androidBot);
+            demonstrateWinBot((AbstractPlatformBot) winBot);
+            demonstrateWebBot((AbstractPlatformBot) webBot);
+            demonstrateAndroidBot((AbstractPlatformBot) androidBot);
 
             log.info("综合示例执行完成");
 
@@ -64,12 +65,12 @@ public class ComprehensiveExample extends BaseExample {
      * 演示WinBot的使用
      * @param winBot Windows机器人实例
      */
-    private void demonstrateWinBot(Object winBot) {
+    private void demonstrateWinBot(AbstractPlatformBot winBot) {
         log.info("--- WinBot演示 ---");
         if (winBot != null) {
-            log.info("脚本名称: {}", bot.getScriptName());
+            log.info("脚本名称: {}", winBot.getScriptName());
             // 实际使用时可以调用各种Windows操作方法
-            // 如: bot.findWindow(...), bot.clickMouse(...), 等
+            // 如: winBot.findWindow(...), winBot.clickMouse(...), 等
         }
     }
     
@@ -77,12 +78,12 @@ public class ComprehensiveExample extends BaseExample {
      * 演示WebBot的使用
      * @param webBot Web机器人实例
      */
-    private void demonstrateWebBot(Object webBot) {
+    private void demonstrateWebBot(AbstractPlatformBot webBot) {
         log.info("--- WebBot演示 ---");
         if (webBot != null) {
-            log.info("Web机器人已准备就绪");
+            log.info("Web机器人已准备就绪，脚本名称: {}", webBot.getScriptName());
             // 实际使用时可以调用各种Web操作方法
-            // 如: bot.navigate(...), bot.clickElement(...), 等
+            // 如: webBot.navigate(...), webBot.clickElement(...), 等
         }
     }
     
@@ -90,12 +91,12 @@ public class ComprehensiveExample extends BaseExample {
      * 演示AndroidBot的使用
      * @param androidBot Android机器人实例
      */
-    private void demonstrateAndroidBot(Object androidBot) {
+    private void demonstrateAndroidBot(AbstractPlatformBot androidBot) {
         log.info("--- AndroidBot演示 ---");
         if (androidBot != null) {
-            log.info("Android机器人已准备就绪");
+            log.info("Android机器人已准备就绪，脚本名称: {}", androidBot.getScriptName());
             // 实际使用时可以调用各种Android操作方法
-            // 如: bot.click(...), bot.swipe(...), 等
+            // 如: androidBot.click(...), androidBot.swipe(...), 等
         }
     }
 

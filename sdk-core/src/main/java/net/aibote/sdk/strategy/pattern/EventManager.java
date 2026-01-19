@@ -1,9 +1,6 @@
 package net.aibote.sdk.strategy.pattern;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -16,68 +13,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
  * - 连接生命周期管理
  * - 命令执行监控
  */
-
-/**
- * 事件类
- */
-@Data
-public class BotEvent {
-
-    public enum EventType {
-        // 连接事件
-        CONNECTION_ESTABLISHED,
-        CONNECTION_CLOSED,
-        CONNECTION_FAILED,
-
-        // 命令事件
-        COMMAND_SENT,
-        COMMAND_EXECUTED,
-        COMMAND_FAILED,
-
-        // 状态事件
-        STATUS_CHANGED,
-        ERROR_OCCURRED,
-
-        // 性能事件
-        PERFORMANCE_ISSUE,
-        RECOVERY_SUCCESS
-    }
-
-    private EventType type;
-    private String sourceId;      // 事件源ID
-    private Object data;          // 事件数据
-    private LocalDateTime timestamp;
-    private String message;
-
-    public BotEvent(EventType type, String sourceId, Object data, String message) {
-        this.type = type;
-        this.sourceId = sourceId;
-        this.data = data;
-        this.message = message;
-        this.timestamp = LocalDateTime.now();
-    }
-}
-
-/**
- * 事件观察者接口
- */
-public interface BotEventListener {
-
-    /**
-     * 处理事件
-     */
-    void onEvent(BotEvent event);
-
-    /**
-     * 获取监听器名称
-     */
-    String getListenerName();
-
-    /**
-     * 检查是否应该处理该事件类型
-     */
-    boolean supports(BotEvent.EventType eventType);
-}
 
 /**
  * 事件管理器 - 实现观察者模式
