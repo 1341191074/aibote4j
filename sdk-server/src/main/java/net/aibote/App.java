@@ -1,6 +1,6 @@
 package net.aibote;
 
-import net.aibote.scripts.ScriptManager;
+import net.aibote.examples.ScriptManager;
 import net.aibote.server.impl.WinServer;
 
 public class App {

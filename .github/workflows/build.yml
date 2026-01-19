@@ -1,0 +1,103 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: ['21']
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK ${{ matrix.java-version }}
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ matrix.java-version }}
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build with Maven
+      run: mvn -B clean compile
+
+    - name: Run tests
+      run: mvn -B test
+
+    - name: Check code quality
+      run: mvn -B checkstyle:check spotbugs:check
+
+    - name: Generate coverage report
+      run: mvn -B test jacoco:report
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        files: ./target/site/jacoco/jacoco.xml
+        flags: unittests
+        fail_ci_if_error: false
+
+    - name: Generate JavaDoc
+      run: mvn -B javadoc:javadoc
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-reports
+        path: target/surefire-reports/
+
+    - name: Archive coverage reports
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-reports
+        path: target/site/jacoco/
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Check for vulnerabilities
+      run: mvn dependency-check:check
+      continue-on-error: true
+
+  sonarqube:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: maven
+
+    - name: Build and analyze
+      env:
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: mvn clean verify -DskipTests sonar:sonar
+      continue-on-error: true
+

@@ -1,0 +1,435 @@
+# aibote4j 快速开始指南
+
+## 5分钟快速开始
+
+### 1. 项目设置
+
+#### 前置条件
+- Java 21 或更高版本
+- Maven 3.8+
+- 网络连接
+
+#### 克隆项目
+```bash
+git clone https://github.com/aibote/aibote4j.git
+cd aibote4j
+```
+
+#### 编译项目
+```bash
+# 清理并编译
+mvn clean compile
+
+# 跳过测试快速编译
+mvn clean compile -DskipTests
+
+# 查看编译结果
+mvn compile && echo "编译成功"
+```
+
+### 2. 创建第一个Bot脚本
+
+创建文件 `MyFirstBot.java`：
+
+```java
+package net.aibote.examples;
+
+import lombok.extern.slf4j.Slf4j;
+import net.aibote.sdk.factory.BotFactory;
+
+@Slf4j
+public class MyFirstBot extends BaseExample {
+    
+    public MyFirstBot() {
+        super("MyFirstBot");
+    }
+    
+    @Override
+    public void run() {
+        // 创建机器人
+        bot = BotFactory.builder()
+            .withBotType(BotFactory.BotType.WIN)
+            .withScriptName("FirstBot")
+            .build();
+        
+        log.info("Bot created: {}", bot.getScriptName());
+        
+        // 执行一些操作
+        bot.sleep(1000);
+        
+        log.info("Bot execution completed");
+    }
+    
+    public static void main(String[] args) {
+        MyFirstBot example = new MyFirstBot();
+        example.runSafely();
+    }
+}
+```
+
+### 3. 运行示例
+
+#### 方式1：IDE运行
+1. 在IDE中右键点击 `MyFirstBot.java`
+2. 选择 "Run MyFirstBot.main()"
+3. 查看控制台输出
+
+#### 方式2：命令行运行
+```bash
+# 编译
+mvn clean compile
+
+# 运行
+mvn exec:java -Dexec.mainClass="net.aibote.examples.MyFirstBot"
+```
+
+#### 预期输出
+```
+[INFO] 初始化示例: MyFirstBot
+[INFO] 开始运行示例: MyFirstBot
+[INFO] Bot created: FirstBot
+[INFO] Bot execution completed
+[INFO] 示例运行完毕: MyFirstBot
+```
+
+## 核心概念
+
+### 1. 配置管理
+
+```java
+// 获取配置管理器
+ConfigManager configManager = ConfigManager.getInstance();
+
+// 获取通信配置
+long timeout = configManager.getCommunicationConfig().getResponseTimeout();
+
+// 获取性能配置
+int maxConcurrency = configManager.getPerformanceConfig().getMaxConcurrency();
+```
+
+### 2. 创建机器人
+
+#### 使用Builder模式（推荐）
+```java
+var bot = BotFactory.builder()
+    .withBotType(BotFactory.BotType.WIN)      // 选择类型
+    .withScriptName("MyScript")                 // 设置脚本名
+    .withChannelContext(ctx)                    // 设置连接
+    .build();
+```
+
+#### 支持的机器人类型
+- `BotFactory.BotType.WIN` - Windows自动化
+- `BotFactory.BotType.WEB` - Web自动化
+- `BotFactory.BotType.ANDROID` - Android自动化
+
+### 3. 执行脚本
+
+```java
+@Slf4j
+public class MyScript extends AndroidBot {
+    
+    @Override
+    public String getScriptName() {
+        return "MyScript";
+    }
+    
+    @Override
+    public void doScript() {
+        log.info("Script started");
+        
+        // 执行操作
+        this.sleep(1000);
+        String info = this.getAndroidId();
+        log.info("Device info: {}", info);
+        
+        log.info("Script completed");
+    }
+}
+```
+
+### 4. 错误处理
+
+```java
+try {
+    bot.doScript();
+} catch (CommandException e) {
+    log.error("命令执行失败: {}", e.getErrorMessage());
+} catch (TimeoutException e) {
+    log.error("执行超时: {}", e.getErrorMessage());
+} catch (Exception e) {
+    log.error("未知错误", e);
+}
+```
+
+## 常用示例
+
+### 示例1：基础机器人
+
+```java
+@Slf4j
+public class BasicBotExample extends BaseExample {
+    
+    public BasicBotExample() {
+        super("BasicBotExample");
+    }
+    
+    @Override
+    public void run() {
+        // 创建Windows机器人
+        bot = BotFactory.builder()
+            .withBotType(BotFactory.BotType.WIN)
+            .withScriptName("BasicBot")
+            .build();
+        
+        log.info("Bot version: {}", bot.getVersion());
+    }
+    
+    public static void main(String[] args) {
+        BasicBotExample example = new BasicBotExample();
+        example.runSafely();
+    }
+}
+```
+
+### 示例2：使用缓存
+
+```java
+@Slf4j
+public class CacheBotExample extends BaseExample {
+    
+    public CacheBotExample() {
+        super("CacheBotExample");
+    }
+    
+    @Override
+    public void run() {
+        ResponseCacheHandler cache = ResponseCacheHandler.getInstance();
+        
+        // 缓存数据 (使用内存缓存，自动TTL清理)
+        byte[] data = new byte[]{1, 2, 3, 4, 5};
+        cache.cache("mykey", data, 5 * 60 * 1000); // 5分钟TTL
+        
+        // 获取缓存
+        byte[] cached = cache.get("mykey");
+        log.info("缓存大小: {}", cache.getCacheSize());
+    }
+    
+    public static void main(String[] args) {
+        CacheBotExample example = new CacheBotExample();
+        example.runSafely();
+    }
+}
+```
+
+### 示例3：请求追踪
+
+```java
+@Slf4j
+public class TraceBotExample extends BaseExample {
+    
+    public TraceBotExample() {
+        super("TraceBotExample");
+    }
+    
+    @Override
+    public void run() {
+        RequestTraceHandler trace = RequestTraceHandler.getInstance();
+        
+        // 获取correlation ID
+        String correlationId = trace.getOrCreateCorrelationId();
+        log.info("[{}] Starting request", correlationId);
+        
+        // 记录请求元数据
+        trace.recordRequest(correlationId, "mycommand", "WinBot");
+        
+        // 执行操作
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        // 标记完成
+        trace.markRequestComplete(correlationId);
+        
+        RequestTraceHandler.RequestMetadata metadata = 
+            trace.getRequestMetadata(correlationId);
+        log.info("[{}] Duration: {}ms", correlationId, metadata.getDurationMillis());
+    }
+    
+    public static void main(String[] args) {
+        TraceBotExample example = new TraceBotExample();
+        example.runSafely();
+    }
+}
+```
+
+## 配置文件
+
+### 默认配置位置
+1. `src/main/resources/bot-config.yml` (classpath)
+2. `./bot-config.yml` (当前目录)
+3. 环境变量 `AIBOTE_CONFIG` 指定的路径
+
+### 配置示例
+
+创建 `src/main/resources/bot-config.yml`：
+
+```yaml
+communication:
+  responseTimeout: 2000
+  delayResponseTimeout: 6000
+  retryTimes: 3
+  retryInterval: 500
+  connectionPoolSize: 10
+
+performance:
+  maxConcurrency: 100
+  threadPoolSize: 10
+
+logging:
+  level: INFO
+
+security:
+  enableValidation: true
+```
+
+### 环境变量覆盖
+
+```bash
+# 设置环境变量覆盖配置
+export AIBOTE_RESPONSE_TIMEOUT=3000
+export AIBOTE_MAX_CONCURRENCY=200
+
+# 运行应用
+java -jar aibote.jar
+```
+
+## 项目结构说明
+
+```
+aibote4j/
+├── sdk-common/              # 公共工具和配置
+│   ├── security/            # 参数验证
+│   ├── utils/               # 工具类
+│   └── config/              # 配置管理
+│
+├── sdk-core/                # 核心SDK
+│   ├── sdk/                 # 机器人基类
+│   ├── factory/             # 工厂类
+│   ├── exception/           # 异常定义
+│   └── handler/             # 缓存和追踪处理器
+│
+└── sdk-server/              # 服务端
+    ├── handler/             # 请求处理
+    ├── server/              # 服务器实现
+    └── examples/            # 示例代码
+```
+
+## 常见问题
+
+### Q1: 如何添加日志？
+
+**A1**: 添加 `@Slf4j` 注解并使用 `log` 对象：
+
+```java
+@Slf4j
+public class MyBot {
+    public void doSomething() {
+        log.debug("调试信息");
+        log.info("一般信息");
+        log.warn("警告信息");
+        log.error("错误信息", exception);
+    }
+}
+```
+
+### Q2: 如何调整超时时间？
+
+**A2**: 设置环境变量或配置文件：
+
+```bash
+# 环境变量
+export AIBOTE_RESPONSE_TIMEOUT=5000
+
+# 或在配置文件中
+communication:
+  responseTimeout: 5000
+```
+
+### Q3: 如何运行多个机器人？
+
+**A3**: 使用虚拟线程并发执行：
+
+```java
+for (int i = 0; i < 5; i++) {
+    int index = i;
+    Thread.ofVirtual().start(() -> {
+        var bot = BotFactory.builder()
+            .withBotType(BotFactory.BotType.ANDROID)
+            .withScriptName("Bot-" + index)
+            .build();
+        // bot.doScript();
+    });
+}
+```
+
+### Q4: 如何查看详细的请求日志？
+
+**A4**: 使用 correlation ID 查看完整的请求链：
+
+```java
+String correlationId = RequestTraceHandler.getInstance()
+    .getOrCreateCorrelationId();
+
+// 所有日志中都包含 correlation ID
+log.info("[{}] Starting operation", correlationId);
+log.info("[{}] Processing data", correlationId);
+log.info("[{}] Operation completed", correlationId);
+
+// 查找日志：
+// grep -r "[correlationId]" logs/
+```
+
+### Q5: 如何性能测试？
+
+**A5**: 使用缓存和追踪工具：
+
+```java
+long startTime = System.currentTimeMillis();
+
+// 执行操作
+for (int i = 0; i < 1000; i++) {
+    // bot.doSomething();
+}
+
+long duration = System.currentTimeMillis() - startTime;
+log.info("完成1000次操作，耗时: {}ms，平均: {}ms/次", 
+    duration, duration / 1000.0);
+
+// 查看缓存统计
+log.info("缓存大小: {}", ResponseCacheHandler.getInstance().getCacheSize());
+
+// 查看总请求数
+log.info("总请求数: {}", RequestTraceHandler.getInstance().getTotalRequestCount());
+```
+
+## 下一步
+
+- 📖 阅读 [架构文档](ARCHITECTURE.md)
+- 📚 查看 [最佳实践](BEST_PRACTICES.md)
+- 📝 查看 [使用文档](USAGE.md)
+- 📖 查看 [文档索引](INDEX.md)
+
+## 支持和反馈
+
+- 📧 联系开发团队
+- 🐛 报告bug
+- 💡 建议新功能
+- 📞 技术支持
+
+---
+
+**最后更新**: 2026-01-19
+
