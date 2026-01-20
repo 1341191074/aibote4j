@@ -18,7 +18,7 @@ import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class WinBot extends Aibote {
+public abstract class WinBot extends AbstractPlatformBot {
 
     /**
      * 查找窗口句柄
@@ -1604,6 +1604,180 @@ public abstract class WinBot extends Aibote {
      */
     public boolean closeDriver() {
         return boolCmd("closeDriver");
+    }
+
+    // ==================== HID 相关方法 ====================
+
+    /**
+     * 初始化 HID（硬件输入设备）
+     *
+     * 用于与 Android 设备通过 USB 进行直接交互。
+     * 此方法应在 AndroidBot.initHid() 之前调用。
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean initHid() {
+        return this.boolCmd("initHid");
+    }
+
+    /**
+     * 获取 HID 数据
+     *
+     * 获取初始化后的 HID 设备数据，用于 AndroidBot 验证初始化是否成功。
+     *
+     * @return String HID 设备数据数组（使用 "|" 分隔的设备 ID）
+     */
+    public String getHidData() {
+        return this.strCmd("getHidData");
+    }
+
+    /**
+     * HID 按下操作（由 AndroidBot 调用）
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param x         横坐标
+     * @param y         纵坐标
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidPress(String androidId, int angle, int x, int y) {
+        return this.strCmd("hidPress", androidId, Integer.toString(angle), Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * HID 移动操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param x         横坐标
+     * @param y         纵坐标
+     * @param duration  移动时长，单位毫秒
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidMove(String androidId, int angle, int x, int y, int duration) {
+        return this.strCmd("hidMove", androidId, Integer.toString(angle), Integer.toString(x), Integer.toString(y), Integer.toString(duration));
+    }
+
+    /**
+     * HID 释放操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidRelease(String androidId, int angle) {
+        return this.strCmd("hidRelease", androidId, Integer.toString(angle));
+    }
+
+    /**
+     * HID 单击操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param x         横坐标
+     * @param y         纵坐标
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidClick(String androidId, int angle, int x, int y) {
+        return this.strCmd("hidClick", androidId, Integer.toString(angle), Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * HID 双击操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param x         横坐标
+     * @param y         纵坐标
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidDoubleClick(String androidId, int angle, int x, int y) {
+        return this.strCmd("hidDoubleClick", androidId, Integer.toString(angle), Integer.toString(x), Integer.toString(y));
+    }
+
+    /**
+     * HID 长按操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param x         横坐标
+     * @param y         纵坐标
+     * @param duration  长按时长，单位毫秒
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidLongClick(String androidId, int angle, int x, int y, int duration) {
+        return this.strCmd("hidLongClick", androidId, Integer.toString(angle), Integer.toString(x), Integer.toString(y), Integer.toString(duration));
+    }
+
+    /**
+     * HID 滑动操作
+     *
+     * @param androidId 安卓设备 ID
+     * @param angle     屏幕旋转角度
+     * @param startX    起始横坐标
+     * @param startY    起始纵坐标
+     * @param endX      结束横坐标
+     * @param endY      结束纵坐标
+     * @param duration  滑动时长，单位毫秒
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidSwipe(String androidId, int angle, int startX, int startY, int endX, int endY, int duration) {
+        return this.strCmd("hidSwipe", androidId, Integer.toString(angle), Integer.toString(startX), Integer.toString(startY), Integer.toString(endX), Integer.toString(endY), Integer.toString(duration));
+    }
+
+    /**
+     * HID 手势操作
+     *
+     * @param androidId   安卓设备 ID
+     * @param angle       屏幕旋转角度
+     * @param gesturePath 手势路径
+     * @param duration    手势时长，单位毫秒
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidDispatchGesture(String androidId, int angle, Object gesturePath, int duration) {
+        return this.strCmd("hidDispatchGesture", androidId, Integer.toString(angle), gesturePath.toString(), Integer.toString(duration));
+    }
+
+    /**
+     * HID 多手势操作
+     *
+     * @param androidId    安卓设备 ID
+     * @param angle        屏幕旋转角度
+     * @param gesturesPath 多个手势路径
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidDispatchGestures(String androidId, int angle, Object gesturesPath) {
+        return this.strCmd("hidDispatchGestures", androidId, Integer.toString(angle), gesturesPath.toString());
+    }
+
+    /**
+     * HID 返回键
+     *
+     * @param androidId 安卓设备 ID
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidBack(String androidId) {
+        return this.strCmd("hidBack", androidId);
+    }
+
+    /**
+     * HID Home 键
+     *
+     * @param androidId 安卓设备 ID
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidHome(String androidId) {
+        return this.strCmd("hidHome", androidId);
+    }
+
+    /**
+     * HID 显示最近任务
+     *
+     * @param androidId 安卓设备 ID
+     * @return String 成功返回 "true"，失败返回 "false"
+     */
+    public String hidRecents(String androidId) {
+        return this.strCmd("hidRecents", androidId);
     }
 
 }

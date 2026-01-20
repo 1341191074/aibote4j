@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # AIBoTe4J 主服务
+  aibote:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aibote-server
+    ports:
+      - "8080:8080"      # 主服务端口
+      - "8081:8081"      # 备用端口
+      - "9000:9000"      # 监控端口
+    environment:
+      - LOG_LEVEL=INFO
+      - JVM_OPTS=-Xms512m -Xmx1024m
+    volumes:
+      - ./config:/app/config
+      - ./logs:/app/logs
+      - ./data:/app/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+    networks:
+      - aibote-network
+    depends_on:
+      - prometheus
+      - grafana
+
+  # Prometheus - 监控和指标收集
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: aibote-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    restart: unless-stopped
+    networks:
+      - aibote-network
+
+  # Grafana - 可视化仪表盘
+  grafana:
+    image: grafana/grafana:latest
+    container_name: aibote-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana-data:/var/lib/grafana
+    restart: unless-stopped
+    networks:
+      - aibote-network
+    depends_on:
+      - prometheus
+
+networks:
+  aibote-network:
+    driver: bridge
+
+volumes:
+  prometheus-data:
+  grafana-data:
+

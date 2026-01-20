@@ -10,8 +10,8 @@
     <name>aibote4j</name>
     <url>http://maven.apache.org</url>
     <modules>
-        <module>sdk-core</module>
         <module>sdk-common</module>
+        <module>sdk-core</module>
         <module>sdk-server</module>
     </modules>
 
@@ -30,7 +30,7 @@
         <commons-lang3.version>3.17.0</commons-lang3.version>
         <commons-io.version>2.18.0</commons-io.version>
         <commons-codec.version>1.17.1</commons-codec.version>
-        <snakeyaml.version>2.3</snakeyaml.version>
+        <snakeyaml.version>2.5</snakeyaml.version>
     </properties>
 
     <dependencies>
@@ -45,6 +45,10 @@
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
         </dependency>
     </dependencies>
 
