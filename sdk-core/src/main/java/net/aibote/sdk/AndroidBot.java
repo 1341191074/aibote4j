@@ -1063,12 +1063,308 @@ public abstract class AndroidBot extends AbstractPlatformBot {
     }
 
     /**
-     * 初始化android Accessory，获取手机hid相关的数据。
+     * 设置隐式等待
      *
+     * @param waitMs      等待时间,单位毫秒
+     * @param intervalMs  心跳间隔，单位毫秒。可选参数，默认5毫秒
      * @return boolean
      */
-    public boolean initAccessory() {
-        return this.boolCmd("initAccessory");
+    public boolean setImplicitTimeout(long waitMs, long intervalMs) {
+        return this.boolCmd("setImplicitTimeout", Long.toString(waitMs), Long.toString(intervalMs));
+    }
+
+    /**
+     * 设置安卓客户端接收超时，默认为永久等待
+     *
+     * @param recvTimeout 超时时间，单位毫秒
+     * @return boolean
+     */
+    public boolean setAndroidTimeout(long recvTimeout) {
+        return this.boolCmd("setAndroidTimeout", Long.toString(recvTimeout));
+    }
+
+    /**
+     * 执行多个手势
+     *
+     * @param gesturesPath 多点手势路径 如: [[duration, [x, y], [x1, y1]...], ...]
+     * @return boolean
+     */
+    public boolean dispatchGestures(String gesturesPath) {
+        return this.boolCmd("dispatchGestures", gesturesPath);
+    }
+
+    /**
+     * 获取可见区域内的所有元素信息
+     *
+     * @return JSONObject json格式的元素信息，失败返回null
+     */
+    public JSONObject getElements() {
+        String strRet = this.strCmd("getElements");
+        if (StringUtils.isNotBlank(strRet)) {
+            try {
+                return JSONObject.parse(strRet);
+            } catch (Exception e) {
+                // 解析失败，返回null
+            }
+        }
+        return null;
+    }
+
+
+    /**
+     * 创建SwitchButton控件
+     *
+     * @param id        控件ID
+     * @param text      控件文本
+     * @param x         x坐标
+     * @param y         y坐标
+     * @param width     宽度
+     * @param height    高度
+     * @param isChecked 是否打开
+     * @return boolean 成功返回true，失败返回false
+     */
+    public boolean createSwitchButton(int id, String text, int x, int y, int width, int height, boolean isChecked) {
+        return this.boolCmd("createSwitchButton", Integer.toString(id), text, Integer.toString(x), Integer.toString(y),
+                           Integer.toString(width), Integer.toString(height), Boolean.toString(isChecked));
+    }
+
+    /**
+     * 获取手机旋转角度
+     *
+     * @return int 返回手机旋转的角度
+     */
+    public int getRotationAngle() {
+        String strRet = this.strCmd("getRotationAngle");
+        try {
+            return Integer.parseInt(strRet);
+        } catch (Exception e) {
+            // 解析失败，返回 0
+            return 0;
+        }
+    }
+
+    /**
+     * 关闭连接
+     */
+    public void closeDriver() {
+        this.strCmd("closeDriver");
+    }
+
+    /**
+     * 激活框架
+     *
+     * @param activateKey 激活密钥
+     * @return String 返回激活信息
+     */
+    public String activateFrame(String activateKey) {
+        return this.strCmd("activateFrame", activateKey);
+    }
+
+    /**
+     * 初始化 HID（硬件输入设备）
+     *
+     * 注：HID 功能允许通过 USB 数据线直接操作 Android 设备，
+     * 绕过应用层，提供更强大的控制能力。
+     *
+     * 初始化流程：
+     * 1. 调用 WinBot.initHid() - 初始化 Windows HID 驱动
+     * 2. 调用 AndroidBot.initAccessory() - 初始化 Android Accessory
+     * 3. 调用 WinBot.getHidData() - 获取 HID 数据
+     * 4. 调用 AndroidBot.initHid() - 完成 Android HID 初始化
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean initHid() {
+        // 注：此方法需要 WinBot 的支持，通常由框架内部调用
+        return this.boolCmd("initHid");
+    }
+
+    /**
+     * HID 按下操作
+     *
+     * @param x 横坐标
+     * @param y 纵坐标
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidPress(int x, int y) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidPress", Integer.toString(x), Integer.toString(y), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 移动操作
+     *
+     * @param x        横坐标
+     * @param y        纵坐标
+     * @param duration 移动时长，单位毫秒
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidMove(int x, int y, int duration) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidMove", Integer.toString(x), Integer.toString(y), Integer.toString(duration), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 释放操作
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidRelease() {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidRelease", Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 单击操作
+     *
+     * @param x 横坐标
+     * @param y 纵坐标
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidClick(int x, int y) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidClick", Integer.toString(x), Integer.toString(y), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 双击操作
+     *
+     * @param x 横坐标
+     * @param y 纵坐标
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidDoubleClick(int x, int y) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidDoubleClick", Integer.toString(x), Integer.toString(y), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 长按操作
+     *
+     * @param x        横坐标
+     * @param y        纵坐标
+     * @param duration 长按时长，单位毫秒
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidLongClick(int x, int y, int duration) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidLongClick", Integer.toString(x), Integer.toString(y), Integer.toString(duration), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 滑动操作
+     *
+     * @param startX   起始横坐标
+     * @param startY   起始纵坐标
+     * @param endX     结束横坐标
+     * @param endY     结束纵坐标
+     * @param duration 滑动时长，单位毫秒
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidSwipe(int startX, int startY, int endX, int endY, int duration) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidSwipe", Integer.toString(startX), Integer.toString(startY), Integer.toString(endX), Integer.toString(endY), Integer.toString(duration), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 手势操作
+     *
+     * @param gesturePath 手势路径，格式：[[x1, y1], [x2, y2], ...]
+     * @param duration    手势时长，单位毫秒
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidDispatchGesture(String gesturePath, int duration) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidDispatchGesture", gesturePath, Integer.toString(duration), Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 多手势操作
+     *
+     * @param gesturesPath 多个手势路径，格式：[[duration1, [x1, y1], ...], [duration2, [x2, y2], ...], ...]
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidDispatchGestures(String gesturesPath) {
+        try {
+            int angle = this.getRotationAngle();
+            return this.boolCmd("hidDispatchGestures", gesturesPath, Integer.toString(angle));
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 返回键
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidBack() {
+        try {
+            String androidId = this.getAndroidId();
+            return this.boolCmd("hidBack", androidId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID Home 键
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidHome() {
+        try {
+            String androidId = this.getAndroidId();
+            return this.boolCmd("hidHome", androidId);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * HID 显示最近任务
+     *
+     * @return boolean 成功返回 true，失败返回 false
+     */
+    public boolean hidRecents() {
+        try {
+            String androidId = this.getAndroidId();
+            return this.boolCmd("hidRecents", androidId);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     //hid 使用 port = 56668;//固定端口
