@@ -74,7 +74,7 @@
 ## 📖 其他资源
 
 - [项目主页](../README.md) - 项目概览和快速开始
-- [GitHub仓库](https://github.com/aibote/aibote4j) - 源码和问题跟踪
+- [GitHub仓库](https://github.com/1341191074/aibote4j) - 源码和问题跟踪
 - [示例代码](../sdk-server/src/test/java/net/aibote/examples/) - 实际使用示例
 
 ## 🤝 贡献文档
