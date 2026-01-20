@@ -8,7 +8,7 @@
     <packaging>pom</packaging>
 
     <name>aibote4j</name>
-    <url>http://maven.apache.org</url>
+    <url>https://maven.apache.org</url>
     <modules>
         <module>sdk-common</module>
         <module>sdk-core</module>
@@ -24,7 +24,7 @@
         <netty-all.version>4.2.9.Final</netty-all.version>
         <lombok.version>1.18.36</lombok.version>
         <slf4j-api.version>2.0.16</slf4j-api.version>
-        <logback-classic.version>1.5.15</logback-classic.version>
+        <logback-classic.version>1.5.25</logback-classic.version>
         <fastjson2.version>2.0.53</fastjson2.version>
         <httpcomponents.version>5.3.1</httpcomponents.version>
         <commons-lang3.version>3.20.0</commons-lang3.version>
