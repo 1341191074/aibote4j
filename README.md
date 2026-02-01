@@ -245,21 +245,9 @@ A: 查看 [常见问题](docs/05-%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/01-%E5%B8%
 
 ## 📞 联系方式
 
-- 📧 Email: support@aibote.net
-- 💬 Issues: [GitHub Issues](https://github.com/aibote/aibote4j/issues)
+- 📧 Email: 1341191074@qq.com
+- 💬 Issues: [GitHub Issues](https://github.com/1341191074/aibote4j/issues)
 - 📖 Docs: [完整文档](docs/README.md)
-
-## 🎯 路线图
-
-### v1.2 (Q2 2026)
-- [ ] 异步 API 支持
-- [ ] 性能优化
-- [ ] 更多平台支持
-
-### v1.3 (Q3 2026)
-- [ ] AI 集成支持
-- [ ] 分布式执行
-- [ ] 可视化调试工具
 
 ## 📊 项目统计
 

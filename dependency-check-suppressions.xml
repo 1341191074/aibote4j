@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.4.xsd">
+    <!-- 后续需要忽略的漏洞，都写在这里，暂时空着即可 -->
+</suppressions>
