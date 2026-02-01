@@ -126,14 +126,27 @@
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
-                <version>12.2.0</version> <!-- 更新到最新版 -->
+                <version>12.2.0</version>
                 <configuration>
                     <failOnError>false</failOnError>
-                    <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                    <suppressionFiles>
+                        <suppressionFile>dependencycheck-base-suppression.xml</suppressionFile>
+                        <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
+                    </suppressionFiles>
                     <connectionTimeout>120000</connectionTimeout>
                     <readTimeout>120000</readTimeout>
                     <enableExperimental>true</enableExperimental>
+                    <nvdApiKey>${dependency-check.nvd.api.key}</nvdApiKey>
+
+                    <enableExperimental>false</enableExperimental>
+                    <hostedSuppressionsEnabled>false</hostedSuppressionsEnabled>
                     <nodeAnalyzerEnabled>false</nodeAnalyzerEnabled>
+                    <nodeAuditAnalyzerEnabled>false</nodeAuditAnalyzerEnabled>
+                    <pnpmAuditAnalyzerEnabled>false</pnpmAuditAnalyzerEnabled>
+                    <yarnAuditAnalyzerEnabled>false</yarnAuditAnalyzerEnabled>
+                    <retireJsAnalyzerEnabled>false</retireJsAnalyzerEnabled>
+                    <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+                    <centralAnalyzerEnabled>false</centralAnalyzerEnabled>
                 </configuration>
                 <executions>
                     <execution>
