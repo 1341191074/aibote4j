@@ -18,7 +18,7 @@ import java.util.*;
 
 @EqualsAndHashCode(callSuper = true)
 @Data
-public abstract class WinBot extends AbstractPlatformBot {
+public class WinBot extends AbstractPlatformBot {
 
     /**
      * 查找窗口句柄

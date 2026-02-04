@@ -28,6 +28,7 @@
 - 🎨 **易用的 API**
   - 统一的机器人接口
   - 工厂模式快速创建实例
+  - 任务引擎简化复杂流程
   - 详细的 API 文档和示例
 
 - 🔌 **扩展性强**
@@ -68,36 +69,29 @@ mvn clean compile
 mvn clean compile -DskipTests
 ```
 
-### 3️⃣ 首个自动化脚本（5分钟）
+### 3️⃣ 首个自动化任务（5分钟）
+
+#### 使用任务引擎（推荐方式）
 
 ```java
-import net.aibote.sdk.WinBot;
-import net.aibote.sdk.factory.BotFactory;
+import net.aibote.Application;
+import net.aibote.task.TaskEngine;
+import net.aibote.task.impl.NotepadAutomationTask;
 
-public class FirstAutomation {
+public class FirstAutomationTask {
     public static void main(String[] args) {
-        // 创建 Windows 自动化机器人
-        WinBot bot = BotFactory.builder()
-            .withBotType(BotFactory.BotType.WIN)
-            .withIP("127.0.0.1")
-            .withPort(9527)
+        // 注册任务
+        NotepadAutomationTask task = NotepadAutomationTask.builder()
+            .taskName("我的第一个任务")
+            .scriptName("First-Task")
+            .description("自动化的记事本操作任务")
             .build();
         
-        // 连接到设备
-        bot.connect();
+        String taskId = TaskEngine.getInstance().registerTask("first-task", task);
         
-        // 获取屏幕尺寸
-        String windowSize = bot.getWindowSize();
-        System.out.println("屏幕大小: " + windowSize);
-        
-        // 点击屏幕中心
-        String[] size = windowSize.split("\\|");
-        int centerX = Integer.parseInt(size[0]) / 2;
-        int centerY = Integer.parseInt(size[1]) / 2;
-        bot.click(centerX, centerY);
-        
-        // 断开连接
-        bot.disconnect();
+        // 启动服务端应用
+        // 客户端连接后会自动执行注册的任务
+        Application.main(args);
     }
 }
 ```
@@ -166,32 +160,24 @@ public class FirstAutomation {
 
 ## 🔗 API 概览
 
-### 核心 API
+### 任务引擎 API（推荐模式）
 
 ```java
-// 创建机器人实例
-WinBot bot = BotFactory.builder()
-    .withBotType(BotFactory.BotType.WIN)
-    .withIP("127.0.0.1")
-    .withPort(9527)
+// 1. 定义任务
+NotepadAutomationTask task = NotepadAutomationTask.builder()
+    .taskName("记事本自动化")
+    .scriptName("Notepad-Bot")
+    .description("自动查找并操作记事本")
     .build();
 
-// 连接
-bot.connect();
+// 2. 注册任务
+String taskId = TaskEngine.getInstance().registerTask("notepad-auto", task);
 
-// 屏幕操作
-bot.takeScreenshot("screenshot.png");
-bot.click(500, 600);
-bot.swipe(100, 200, 600, 200);
+// 3. 启动服务端（客户端连接时自动执行任务）
+Application.main(new String[]{});
 
-// 图像识别
-Point point = bot.findImage("target.png");
-
-// OCR 识别
-List<OCRResult> results = bot.ocr(region);
-
-// 断开连接
-bot.disconnect();
+// 手动执行任务（需要有效的ChannelHandlerContext）
+TaskEngine.getInstance().executeTask(taskId, channelContext, BotType.WIN);
 ```
 
 ## 🎓 学习资源
@@ -210,14 +196,14 @@ bot.disconnect();
 
 ## ❓ 常见问题
 
-### Q: 如何连接到远程设备？
-A: 配置 IP 和端口即可连接远程 WindowsDriver。详见 [环境安装](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/02-%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85.md)。
+### Q: 支持哪些平台？
+A: 支持 Windows、Web 和 Android 平台自动化。详见 [使用指南](docs/02-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/README.md)。
 
-### Q: 支持哪些浏览器？
-A: WebBot 支持 Chrome 和 Edge。详见 [Web自动化](docs/02-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/04-Web%E8%87%AA%E5%8A%A8%E5%8C%96.md)。
+### Q: 如何调试任务执行？
+A: 可以启用详细日志或添加执行监听器来监控任务状态。
 
-### Q: 如何解决连接问题？
-A: 查看 [故障排除](docs/05-%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/README.md)。
+### Q: 任务执行失败怎么办？
+A: 查看 [故障排除](docs/05-%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/README.md) 或检查任务日志。
 
 ### Q: 更多问题？
 A: 查看 [常见问题](docs/05-%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/01-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98.md) 或提交 Issue。

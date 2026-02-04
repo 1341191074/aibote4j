@@ -14,6 +14,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * 平台机器人抽象基类
@@ -24,8 +25,8 @@ public abstract class AbstractPlatformBot {
     private final ReentrantLock lock = new ReentrantLock();
     public String runStatus;
 
-    @Setter
-    private byte[] retBuffer;
+    // 使用 AtomicReference 替代直接的 byte[] 字段，提高线程安全性
+    private final AtomicReference<byte[]> retBufferRef = new AtomicReference<>();
 
     public ChannelHandlerContext aiboteChanel;
 
@@ -52,16 +53,8 @@ public abstract class AbstractPlatformBot {
         this.retDelayTimeout = ConfigManager.getInstance().getCommunicationConfig().getDelayResponseTimeout();
     }
 
-    /**
-     * 获取脚本名称
-     * @return 脚本名称
-     */
-    public abstract String getScriptName();
-
-    /**
-     * 执行脚本
-     */
-    public abstract void doScript();
+    // 注：getScriptName() 和 doScript() 方法已被弃用
+    // 现代任务执行使用 TaskDefinition 接口替代
 
     /**
      * 获取框架版本
@@ -90,6 +83,116 @@ public abstract class AbstractPlatformBot {
     protected void send(String... arrArgs) {
         this.send(this.retTimeout, arrArgs);
     }
+    
+    /**
+     * 安全地设置响应缓冲区
+     * @param buffer 响应数据
+     */
+    public void setRetBuffer(byte[] buffer) {
+        retBufferRef.set(buffer);
+    }
+    
+    /**
+     * 安全地获取并清空响应缓冲区
+     * @return 响应数据，如果为空则返回null
+     */
+    private byte[] takeRetBuffer() {
+        return retBufferRef.getAndSet(null);
+    }
+
+    /**
+     * 设置发送数据格式
+     * 数据格式: len/len/len\ndata
+     * @param arrArgs 命令参数
+     * @return 格式化后的数据字符串
+     */
+    protected String setSendData(String... arrArgs) {
+        //数据格式 len/len/len\ndata
+        StringBuilder strData = new StringBuilder();
+        StringBuilder tempStr = new StringBuilder();
+        for (String args : arrArgs) {
+            if (args == null) args = "";
+            tempStr.append(args);
+            strData.append(args.getBytes(StandardCharsets.UTF_8).length);//获取包含中文实际长度
+            strData.append('/');
+        }
+        strData.append('\n');
+        strData.append(tempStr);
+        return strData.toString();
+    }
+
+    /**
+     * 发送协议到driver
+     * @param strData 格式化后的数据
+     * @return 响应字符串
+     */
+    protected String sendData(String strData) {
+        byte[] bytes = this.sendDataForBytes(strData);
+        if (null == bytes) {
+            return null;
+        }
+        return new String(bytes);
+    }
+
+    /**
+     * 发送协议到driver并返回字节数据
+     * 主要用于返回图片使用
+     * @param strData 格式化后的数据
+     * @return 响应字节数组
+     */
+    protected byte[] sendDataForBytes(String strData) {
+        log.info("发送命令：" + strData);
+        // 直接发送数据并等待响应
+        if (this.aiboteChanel == null) {
+            throw new RuntimeException("链接错误");
+        }
+        
+        this.aiboteChanel.writeAndFlush(strData.getBytes(StandardCharsets.UTF_8));
+        
+        // 使用 CompletableFuture 实现非阻塞等待
+        CompletableFuture<byte[]> future = new CompletableFuture<>();
+        
+        // 在单独的线程中处理超时
+        Thread timeoutThread = new Thread(() -> {
+            try {
+                Thread.sleep(retTimeout);
+                if (!future.isDone()) {
+                    future.completeExceptionally(new TimeoutException("命令执行超时"));
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(e);
+            }
+        });
+        timeoutThread.setDaemon(true);
+        timeoutThread.start();
+        
+        // 轮询检查响应（减少锁竞争）
+        long startTime = System.currentTimeMillis();
+        while (!future.isDone() && (System.currentTimeMillis() - startTime) < retTimeout) {
+            byte[] buffer = takeRetBuffer();
+            if (buffer != null) {
+                future.complete(buffer);
+                break;
+            }
+            
+            // 短暂休眠避免过度占用CPU
+            try {
+                Thread.sleep(1);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                future.completeExceptionally(e);
+                break;
+            }
+        }
+        
+        try {
+            return future.get(0, TimeUnit.MILLISECONDS); // 立即返回结果或异常
+        } catch (Exception e) {
+            log.error("发送数据失败", e);
+            return null;
+        }
+    }
 
     /**
      * 发送命令
@@ -101,10 +204,10 @@ public abstract class AbstractPlatformBot {
             throw new RuntimeException("链接错误");
         }
         
-        CountDownLatch latch = new CountDownLatch(1);
-        
+        // 使用新的协议格式
         this.aiboteChanel.writeAndFlush(arrArgs);
         
+        CountDownLatch latch = new CountDownLatch(1);
         StopWatch stopwatch = new StopWatch();
         stopwatch.start();
         
@@ -123,18 +226,14 @@ public abstract class AbstractPlatformBot {
                 }
                 
                 while (remainingTime > 0) {
-                    lock.lock();
-                    try {
-                        if (this.retBuffer != null) {
-                            return; // 成功获取到响应
-                        }
-                    } finally {
-                        lock.unlock();
+                    byte[] buffer = takeRetBuffer();
+                    if (buffer != null) {
+                        return; // 成功获取到响应
                     }
                     
-                    // 逐渐增加等待时间，避免过度占用CPU
-                    long waitTime = Math.min(10, remainingTime); // 最多等待10ms
-                    Thread.sleep(Math.min(waitTime, 10));
+                    // 短暂休眠避免过度占用CPU
+                    long waitTime = Math.min(5, remainingTime);
+                    Thread.sleep(Math.min(waitTime, 5));
                     
                     remainingTime = timeOut - (System.currentTimeMillis() - startTime);
                     
@@ -158,8 +257,9 @@ public abstract class AbstractPlatformBot {
     /**
      * 发送字节命令
      * @param arrArgs 命令参数
+     * @return 响应字节数组
      */
-    protected void sendBytes(byte[] arrArgs) {
+    protected byte[] sendBytes(byte[] arrArgs) {
         if (this.aiboteChanel == null) {
             throw new RuntimeException("链接错误");
         }
@@ -176,18 +276,14 @@ public abstract class AbstractPlatformBot {
             long startTime = System.currentTimeMillis();
             
             while (remainingTime > 0) {
-                lock.lock();
-                try {
-                    if (this.retBuffer != null) {
-                        return; // 成功获取到响应
-                    }
-                } finally {
-                    lock.unlock();
+                byte[] buffer = takeRetBuffer();
+                if (buffer != null) {
+                    return buffer; // 成功获取到响应
                 }
                 
-                // 逐渐增加等待时间，避免过度占用CPU
-                long waitTime = Math.min(10, remainingTime); // 最多等待10ms
-                Thread.sleep(Math.min(waitTime, 10));
+                // 短暂休眠避免过度占用CPU
+                long waitTime = Math.min(5, remainingTime);
+                Thread.sleep(Math.min(waitTime, 5));
                 
                 remainingTime = retTimeout - (System.currentTimeMillis() - startTime);
             }
@@ -200,6 +296,7 @@ public abstract class AbstractPlatformBot {
         } finally {
             stopwatch.stop();
         }
+        return null;
     }
 
     /**
@@ -209,24 +306,13 @@ public abstract class AbstractPlatformBot {
      */
     public byte[] bytesCmd(String... arrArgs) {
         // 清空之前的响应
-        lock.lock();
-        try {
-            this.retBuffer = null;
-        } finally {
-            lock.unlock();
-        }
+        setRetBuffer(null);
         
         this.send(arrArgs);
         
-        lock.lock();
-        try {
-            if (this.retBuffer != null) {
-                byte[] ret = this.retBuffer;
-                this.retBuffer = null;
-                return ret;
-            }
-        } finally {
-            lock.unlock();
+        byte[] buffer = takeRetBuffer();
+        if (buffer != null) {
+            return buffer;
         }
         return null;
     }
@@ -238,24 +324,13 @@ public abstract class AbstractPlatformBot {
      */
     public boolean boolCmd(String... arrArgs) {
         // 清空之前的响应
-        lock.lock();
-        try {
-            this.retBuffer = null;
-        } finally {
-            lock.unlock();
-        }
+        setRetBuffer(null);
         
         this.send(arrArgs);
         
-        lock.lock();
-        try {
-            if (this.retBuffer != null) {
-                byte[] ret = this.retBuffer;
-                this.retBuffer = null;
-                return "true".equals(new String(ret));
-            }
-        } finally {
-            lock.unlock();
+        byte[] buffer = takeRetBuffer();
+        if (buffer != null) {
+            return "true".equals(new String(buffer));
         }
         return false;
     }
@@ -267,24 +342,13 @@ public abstract class AbstractPlatformBot {
      */
     protected boolean boolDelayCmd(String... arrArgs) {
         // 清空之前的响应
-        lock.lock();
-        try {
-            this.retBuffer = null;
-        } finally {
-            lock.unlock();
-        }
+        setRetBuffer(null);
         
         this.send(this.retDelayTimeout, arrArgs);
         
-        lock.lock();
-        try {
-            if (this.retBuffer != null) {
-                byte[] ret = this.retBuffer;
-                this.retBuffer = null;
-                return "true".equals(new String(ret));
-            }
-        } finally {
-            lock.unlock();
+        byte[] buffer = takeRetBuffer();
+        if (buffer != null) {
+            return "true".equals(new String(buffer));
         }
         return false;
     }
@@ -296,27 +360,16 @@ public abstract class AbstractPlatformBot {
      */
     protected String strCmd(String... arrArgs) {
         // 清空之前的响应
-        lock.lock();
-        try {
-            this.retBuffer = null;
-        } finally {
-            lock.unlock();
-        }
+        setRetBuffer(null);
         
         this.send(arrArgs);
         
-        lock.lock();
-        try {
-            if (this.retBuffer != null) {
-                byte[] ret = this.retBuffer;
-                this.retBuffer = null;
-                String retStr = new String(ret);
-                if (!"null".equals(retStr)) {
-                    return retStr;
-                }
+        byte[] buffer = takeRetBuffer();
+        if (buffer != null) {
+            String retStr = new String(buffer);
+            if (!"null".equals(retStr)) {
+                return retStr;
             }
-        } finally {
-            lock.unlock();
         }
         return null;
     }
@@ -328,27 +381,16 @@ public abstract class AbstractPlatformBot {
      */
     protected String strDelayCmd(String... arrArgs) {
         // 清空之前的响应
-        lock.lock();
-        try {
-            this.retBuffer = null;
-        } finally {
-            lock.unlock();
-        }
+        setRetBuffer(null);
         
         this.send(this.retDelayTimeout, arrArgs);
         
-        lock.lock();
-        try {
-            if (this.retBuffer != null) {
-                byte[] ret = this.retBuffer;
-                this.retBuffer = null;
-                String retStr = new String(ret);
-                if (!"null".equals(retStr)) {
-                    return retStr;
-                }
+        byte[] buffer = takeRetBuffer();
+        if (buffer != null) {
+            String retStr = new String(buffer);
+            if (!"null".equals(retStr)) {
+                return retStr;
             }
-        } finally {
-            lock.unlock();
         }
         return null;
     }
@@ -373,24 +415,13 @@ public abstract class AbstractPlatformBot {
             byteArrayOutputStream.write(fileData);
             
             // 清空之前的响应
-            lock.lock();
-            try {
-                this.retBuffer = null;
-            } finally {
-                lock.unlock();
-            }
+            setRetBuffer(null);
             
             this.sendBytes(byteArrayOutputStream.toByteArray());
             
-            lock.lock();
-            try {
-                if (this.retBuffer != null) {
-                    byte[] ret = this.retBuffer;
-                    this.retBuffer = null;
-                    return "true".equals(new String(ret));
-                }
-            } finally {
-                lock.unlock();
+            byte[] buffer = takeRetBuffer();
+            if (buffer != null) {
+                return "true".equals(new String(buffer));
             }
         } catch (IOException ex) {
             throw new RuntimeException(ex);
