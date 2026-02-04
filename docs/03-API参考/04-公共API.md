@@ -8,24 +8,6 @@
 
 [AbstractPlatformBot](file:///F:/workspace/github/aibote4j/sdk-core/src/main/java/net/aibote/sdk/AbstractPlatformBot.java) 是所有平台机器人的抽象基类。
 
-#### connect
-连接
-
-**方法签名：**
-```java
-public abstract boolean connect()
-```
-
-**返回值：** 连接成功返回 true
-
-#### disconnect
-断开连接
-
-**方法签名：**
-```java
-public abstract void disconnect()
-```
-
 #### getScriptName
 获取脚本名称
 
@@ -57,105 +39,148 @@ public static String getVersion()
 
 **返回值：** 框架版本号
 
+## 任务引擎 API
+
+### TaskEngine 类
+
+任务引擎是框架的核心组件，负责任务的注册、管理和执行。
+
+#### getInstance
+获取任务引擎单例实例
+
+**方法签名：**
+```java
+public static TaskEngine getInstance()
+```
+
+**返回值：** TaskEngine 单例实例
+
+**使用示例：**
+```java
+TaskEngine engine = TaskEngine.getInstance();
+```
+
+#### registerTask
+注册任务
+
+**方法签名：**
+```java
+public String registerTask(String taskName, TaskDefinition taskDefinition)
+```
+
+**参数：**
+- `taskName` - 任务名称
+- `taskDefinition` - 任务定义
+
+**返回值：** 任务ID
+
+**使用示例：**
+```java
+NotepadAutomationTask task = NotepadAutomationTask.builder()
+    .taskName("记事本任务")
+    .scriptName("Notepad-Bot")
+    .build();
+
+String taskId = TaskEngine.getInstance().registerTask("notepad-task", task);
+```
+
+#### getTask
+获取已注册的任务
+
+**方法签名：**
+```java
+public TaskDefinition getTask(String taskId)
+```
+
+**参数：**
+- `taskId` - 任务ID
+
+**返回值：** 任务定义
+
+#### executeTask
+执行指定任务
+
+**方法签名：**
+```java
+public void executeTask(String taskId, ChannelHandlerContext ctx, BotFactory.BotType botType)
+```
+
+**参数：**
+- `taskId` - 任务ID
+- `ctx` - 通道上下文
+- `botType` - 机器人类型
+
+#### getAllTasks
+获取所有已注册的任务
+
+**方法签名：**
+```java
+public Map<String, TaskDefinition> getAllTasks()
+```
+
+**返回值：** 任务映射
+
+#### removeTask
+移除任务
+
+**方法签名：**
+```java
+public boolean removeTask(String taskId)
+```
+
+**参数：**
+- `taskId` - 任务ID
+
+**返回值：** 是否移除成功
+
 ## 工厂类 API
 
 ### BotFactory 类
 
-机器人工厂，用于创建机器人实例
+机器人工厂，用于在服务端内部创建机器人实例
 
 **使用示例：**
 ```java
-WinBot bot = BotFactory.builder()
-    .withBotType(BotFactory.BotType.WIN)      // 选择类型
-    .withIP("127.0.0.1")                       // 设置 IP
-    .withPort(9527)                            // 设置端口
-    .withTimeout(30000)                        // 设置超时
+// 通常在任务执行过程中由框架自动创建
+// 用户无需直接调用工厂方法
+```
+
+### TaskDefinition 接口
+
+任务定义接口，所有自定义任务都需要实现此接口。
+
+#### getSupportedBotTypes
+获取支持的机器人类型
+
+**方法签名：**
+```java
+Set<BotFactory.BotType> getSupportedBotTypes()
+```
+
+**返回值：** 支持的机器人类型集合
+
+#### getTaskExecutor
+获取任务执行器
+
+**方法签名：**
+```java
+TaskExecutor getTaskExecutor()
+```
+
+**返回值：** 任务执行器
+
+### NotepadAutomationTask 类
+
+内置的记事本自动化任务示例。
+
+**使用示例：**
+```java
+NotepadAutomationTask task = NotepadAutomationTask.builder()
+    .taskName("记事本自动化")
+    .scriptName("Notepad-Bot")
+    .description("自动查找记事本窗口并执行操作")
     .build();
 ```
-
-### BotFactory.Builder 类
-
-BotFactory 的 Builder 类，用于配置机器人参数。
-
-#### withBotType
-设置机器人类型
-
-**方法签名：**
-```java
-public BotConfigBuilder withBotType(BotType botType)
-```
-
-**参数：**
-- `botType` - 机器人类型
-
-**返回值：** Builder 实例
-
-**支持的机器人类型：**
-- `BotFactory.BotType.WIN` - Windows 机器人
-- `BotFactory.BotType.WEB` - Web 机器人
-- `BotFactory.BotType.ANDROID` - Android 机器人
-
-#### withIP
-设置 IP 地址
-
-**方法签名：**
-```java
-public BotConfigBuilder withIP(String ip)
-```
-
-**参数：**
-- `ip` - IP 地址
-
-**返回值：** Builder 实例
-
-#### withPort
-设置端口
-
-**方法签名：**
-```java
-public BotConfigBuilder withPort(int port)
-```
-
-**参数：**
-- `port` - 端口号
-
-**返回值：** Builder 实例
-
-#### withTimeout
-设置超时时间
-
-**方法签名：**
-```java
-public BotConfigBuilder withTimeout(int timeout)
-```
-
-**参数：**
-- `timeout` - 超时时间（毫秒）
-
-**返回值：** Builder 实例
-
-#### withScriptName
-设置脚本名称
-
-**方法签名：**
-```java
-public BotConfigBuilder withScriptName(String scriptName)
-```
-
-**参数：**
-- `scriptName` - 脚本名称
-
-**返回值：** Builder 实例
-
-#### build
-构建机器人实例
-
-**方法签名：**
-```java
-public AbstractPlatformBot build()
-```
-
-**返回值：** 机器人实例
 
 ## 数据模型 API
 

@@ -19,12 +19,14 @@ WinBot winBot = BotFactory.builder()
 ### 连接到设备
 
 ```java
-// 连接到 Windows Driver
-if (winBot.connect()) {
-    System.out.println("连接成功！");
-} else {
-    System.out.println("连接失败！");
-}
+// 通过任务引擎使用Windows自动化
+NotepadAutomationTask task = NotepadAutomationTask.builder()
+    .taskName("Windows自动化任务")
+    .scriptName("Windows-Auto")
+    .build();
+
+TaskEngine.getInstance().registerTask("windows-task", task);
+Application.main(new String[]{});
 ```
 
 ## 🖥️ 窗口操作
@@ -347,20 +349,27 @@ if (captchaResult.getInteger("err_no") == 0) {
 ### 连接管理
 
 ```java
-// 确保正确管理连接
-try {
-    WinBot bot = BotFactory.builder()
-        .withBotType(BotFactory.BotType.WIN)
-        .build();
+// 正确的任务驱动方式
+public class WindowsAutomationTask implements TaskDefinition {
     
-    if (bot.connect()) {
-        // 执行操作
-        bot.clickMouse(hwnd, 100, 100, 1, Mode.FOREGROUND, null);
+    @Override
+    public void executeTask(AbstractPlatformBot bot) throws Exception {
+        if (!(bot instanceof WinBot)) {
+            throw new IllegalArgumentException("仅支持Windows机器人");
+        }
+        
+        WinBot winBot = (WinBot) bot;
+        
+        // 执行自动化操作
+        String hwnd = winBot.findWindow("Notepad", null);
+        if (hwnd != null) {
+            winBot.clickMouse(hwnd, 100, 100, 1, Mode.FOREGROUND, null);
+        }
     }
-} finally {
-    // 确保断开连接
-    if (bot != null) {
-        bot.disconnect();
+    
+    @Override
+    public Set<BotFactory.BotType> getSupportedBotTypes() {
+        return Set.of(BotFactory.BotType.WIN);
     }
 }
 ```

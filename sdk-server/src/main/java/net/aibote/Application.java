@@ -22,6 +22,9 @@ public class Application {
         try {
             log.info("Aibote4J 服务端启动中...");
             
+            // 注册JVM关闭钩子
+            registerShutdownHook();
+            
             // 1. 注册默认任务
             registerDefaultTasks();
             
@@ -66,6 +69,29 @@ public class Application {
         log.info("已注册任务: {} (ID: {})", notepadTask.getTaskName(), taskId);
         
         log.info("默认任务注册完成，当前任务总数: {}", TaskEngine.getInstance().getTaskCount());
+    }
+    
+    /**
+     * 注册JVM关闭钩子，确保优雅关闭
+     */
+    private static void registerShutdownHook() {
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            log.info("接收到关闭信号，开始优雅关闭...");
+            
+            try {
+                // 关闭客户端管理器
+                net.aibote.handler.ClientManager.getInstance().shutdown();
+                log.info("客户端管理器已关闭");
+                
+                // 等待一段时间让剩余请求处理完成
+                Thread.sleep(2000);
+                
+            } catch (Exception e) {
+                log.error("关闭过程中出现异常", e);
+            }
+            
+            log.info("应用程序已优雅关闭");
+        }, "Shutdown-Hook"));
     }
     
     /**

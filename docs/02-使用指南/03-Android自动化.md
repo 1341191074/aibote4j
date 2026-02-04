@@ -19,12 +19,14 @@ AndroidBot androidBot = BotFactory.builder()
 ### 连接到设备
 
 ```java
-// 连接到 Android 设备（通过 ADB）
-if (androidBot.connect()) {
-    System.out.println("连接成功！");
-} else {
-    System.out.println("连接失败！");
-}
+// 通过任务引擎使用Android自动化
+NotepadAutomationTask task = NotepadAutomationTask.builder()
+    .taskName("Android自动化任务")
+    .scriptName("Android-Auto")
+    .build();
+
+TaskEngine.getInstance().registerTask("android-task", task);
+Application.main(new String[]{});
 ```
 
 ## 📱 基本操作
@@ -272,20 +274,27 @@ public void autoScroll() {
 ### 连接管理
 
 ```java
-// 确保正确管理连接
-try {
-    AndroidBot bot = BotFactory.builder()
-        .withBotType(BotFactory.BotType.ANDROID)
-        .build();
+// 正确的任务驱动方式
+public class AndroidAutomationTask implements TaskDefinition {
     
-    if (bot.connect()) {
-        // 执行操作
-        bot.click(500, 1000);
+    @Override
+    public void executeTask(AbstractPlatformBot bot) throws Exception {
+        if (!(bot instanceof AndroidBot)) {
+            throw new IllegalArgumentException("仅支持Android机器人");
+        }
+        
+        AndroidBot androidBot = (AndroidBot) bot;
+        
+        // 执行自动化操作
+        Point target = androidBot.findImage("target.png", 0.9f);
+        if (target != null) {
+            androidBot.click(target.x, target.y);
+        }
     }
-} finally {
-    // 确保断开连接
-    if (bot != null) {
-        bot.disconnect();
+    
+    @Override
+    public Set<BotFactory.BotType> getSupportedBotTypes() {
+        return Set.of(BotFactory.BotType.ANDROID);
     }
 }
 ```

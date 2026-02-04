@@ -5,6 +5,7 @@ import lombok.Data;
 import net.aibote.sdk.AbstractPlatformBot;
 import net.aibote.sdk.WinBot;
 import net.aibote.sdk.factory.BotFactory;
+import net.aibote.sdk.options.Mode;
 import net.aibote.task.TaskDefinition;
 
 import java.util.Set;
@@ -47,45 +48,12 @@ public class NotepadAutomationTask implements TaskDefinition {
         }
         
         WinBot winBot = (WinBot) bot;
-        
-        // 任务逻辑：查找记事本窗口并执行操作
-        System.out.println("开始执行记事本自动化任务...");
-        
-        // 1. 查找记事本窗口
-        String hwnd = winBot.findWindow("CabinetWClass", "此电脑 - 文件资源管理器");
-        if (hwnd == null) {
-            System.out.println("未找到记事本窗口");
-            return;
-        }
-        System.out.println("找到记事本窗口: " + hwnd);
-        
-        // 2. 获取窗口位置
-        String windowPos = winBot.getWindowPos(hwnd);
-        System.out.println("窗口位置: " + windowPos);
-        
-        // 3. 移动鼠标到窗口中心
-        String[] pos = windowPos.split("\\|");
-        if (pos.length >= 4) {
-            int left = Integer.parseInt(pos[0]);
-            int top = Integer.parseInt(pos[1]);
-            int right = Integer.parseInt(pos[2]);
-            int bottom = Integer.parseInt(pos[3]);
-            
-            int centerX = left + (right - left) / 2;
-            int centerY = top + (bottom - top) / 2;
-            
-            winBot.moveMouse(hwnd, centerX, centerY, net.aibote.sdk.options.Mode.front, null);
-            System.out.println("鼠标已移动到窗口中心: (" + centerX + ", " + centerY + ")");
-            
-            // 4. 点击窗口
-            winBot.clickMouse(hwnd, centerX, centerY, 1, net.aibote.sdk.options.Mode.front, null);
-            System.out.println("已点击窗口");
-            
-            // 5. 输入文本
-            winBot.sendKeys("Hello from Aibote4J Task Engine!");
-            System.out.println("已输入文本");
-        }
-        
-        System.out.println("记事本自动化任务执行完成");
+
+        Thread.sleep(3000);//静默5秒
+
+        String cabinetWClass = winBot.findWindow("CabinetWClass", "");
+        System.out.println(cabinetWClass);
+
+        winBot.moveMouse("", 100, 100, Mode.front,"");
     }
 }

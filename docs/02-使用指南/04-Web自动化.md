@@ -359,10 +359,14 @@ try {
         .withBotType(BotFactory.BotType.WEB)
         .build();
     
-    if (bot.connect()) {
-        // 执行操作
-        bot.navigate("https://www.example.com");
-    }
+    // 通过任务引擎执行Web自动化
+    NotepadAutomationTask task = NotepadAutomationTask.builder()
+        .taskName("Web自动化任务")
+        .scriptName("Web-Auto")
+        .build();
+    
+    TaskEngine.getInstance().registerTask("web-task", task);
+    Application.main(new String[]{});
 } finally {
     // 确保断开连接
     if (bot != null) {

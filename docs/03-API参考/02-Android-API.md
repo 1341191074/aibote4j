@@ -8,24 +8,6 @@
 
 ## 基本操作 API
 
-### connect
-连接到 Android 设备
-
-**方法签名：**
-```java
-public boolean connect()
-```
-
-**返回值：** 连接成功返回 true，失败返回 false
-
-### disconnect
-断开连接
-
-**方法签名：**
-```java
-public void disconnect()
-```
-
 ### getAndroidId
 获取设备 ID
 
