@@ -8,7 +8,7 @@ import java.util.Map;
 
 @Data
 @EqualsAndHashCode(callSuper = true)
-public abstract class WebBot extends AbstractPlatformBot {
+public class WebBot extends AbstractPlatformBot {
 
     /**
      * 导航至 url

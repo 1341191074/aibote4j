@@ -52,16 +52,8 @@ public abstract class AbstractPlatformBot {
         this.retDelayTimeout = ConfigManager.getInstance().getCommunicationConfig().getDelayResponseTimeout();
     }
 
-    /**
-     * 获取脚本名称
-     * @return 脚本名称
-     */
-    public abstract String getScriptName();
-
-    /**
-     * 执行脚本
-     */
-    public abstract void doScript();
+    // 注：getScriptName() 和 doScript() 方法已被弃用
+    // 现代任务执行使用 TaskDefinition 接口替代
 
     /**
      * 获取框架版本
@@ -92,6 +84,83 @@ public abstract class AbstractPlatformBot {
     }
 
     /**
+     * 设置发送数据格式
+     * 数据格式: len/len/len\ndata
+     * @param arrArgs 命令参数
+     * @return 格式化后的数据字符串
+     */
+    protected String setSendData(String... arrArgs) {
+        //数据格式 len/len/len\ndata
+        StringBuilder strData = new StringBuilder();
+        StringBuilder tempStr = new StringBuilder();
+        for (String args : arrArgs) {
+            if (args == null) args = "";
+            tempStr.append(args);
+            strData.append(args.getBytes(StandardCharsets.UTF_8).length);//获取包含中文实际长度
+            strData.append('/');
+        }
+        strData.append('\n');
+        strData.append(tempStr);
+        return strData.toString();
+    }
+
+    /**
+     * 发送协议到driver
+     * @param strData 格式化后的数据
+     * @return 响应字符串
+     */
+    protected String sendData(String strData) {
+        byte[] bytes = this.sendDataForBytes(strData);
+        if (null == bytes) {
+            return null;
+        }
+        return new String(bytes);
+    }
+
+    /**
+     * 发送协议到driver并返回字节数据
+     * 主要用于返回图片使用
+     * @param strData 格式化后的数据
+     * @return 响应字节数组
+     */
+    protected byte[] sendDataForBytes(String strData) {
+        log.info("发送命令：" + strData);
+        // 直接发送数据并等待响应
+        if (this.aiboteChanel == null) {
+            throw new RuntimeException("链接错误");
+        }
+        
+        this.aiboteChanel.writeAndFlush(strData.getBytes(StandardCharsets.UTF_8));
+        
+        // 等待响应
+        try {
+            long remainingTime = retTimeout;
+            long startTime = System.currentTimeMillis();
+            
+            while (remainingTime > 0) {
+                lock.lock();
+                try {
+                    if (this.retBuffer != null) {
+                        byte[] ret = this.retBuffer;
+                        this.retBuffer = null;
+                        return ret;
+                    }
+                } finally {
+                    lock.unlock();
+                }
+                
+                long waitTime = Math.min(10, remainingTime);
+                Thread.sleep(Math.min(waitTime, 10));
+                remainingTime = retTimeout - (System.currentTimeMillis() - startTime);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            log.error("发送数据被中断", e);
+        }
+        return null;
+    }
+
+    /**
      * 发送命令
      * @param timeOut 超时时间
      * @param arrArgs 命令参数
@@ -101,9 +170,13 @@ public abstract class AbstractPlatformBot {
             throw new RuntimeException("链接错误");
         }
         
-        CountDownLatch latch = new CountDownLatch(1);
+        // 使用新的协议格式
+        String formattedData = setSendData(arrArgs);
         
-        this.aiboteChanel.writeAndFlush(arrArgs);
+        CountDownLatch latch = new CountDownLatch(1);
+        log.info("发送命令：" + formattedData);
+        // 发送格式化后的数据
+        this.aiboteChanel.writeAndFlush(formattedData.getBytes(StandardCharsets.UTF_8));
         
         StopWatch stopwatch = new StopWatch();
         stopwatch.start();
@@ -158,8 +231,9 @@ public abstract class AbstractPlatformBot {
     /**
      * 发送字节命令
      * @param arrArgs 命令参数
+     * @return 响应字节数组
      */
-    protected void sendBytes(byte[] arrArgs) {
+    protected byte[] sendBytes(byte[] arrArgs) {
         if (this.aiboteChanel == null) {
             throw new RuntimeException("链接错误");
         }
@@ -179,7 +253,9 @@ public abstract class AbstractPlatformBot {
                 lock.lock();
                 try {
                     if (this.retBuffer != null) {
-                        return; // 成功获取到响应
+                        byte[] ret = this.retBuffer;
+                        this.retBuffer = null;
+                        return ret; // 成功获取到响应
                     }
                 } finally {
                     lock.unlock();
@@ -200,6 +276,7 @@ public abstract class AbstractPlatformBot {
         } finally {
             stopwatch.stop();
         }
+        return null;
     }
 
     /**

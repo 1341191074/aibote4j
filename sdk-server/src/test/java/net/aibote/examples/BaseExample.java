@@ -14,7 +14,7 @@ import net.aibote.sdk.AbstractPlatformBot;
 @Slf4j
 public abstract class BaseExample {
 
-    protected AbstractPlatformBot bot;
+//    protected AbstractPlatformBot bot;
     protected String exampleName;
 
     /**
@@ -36,9 +36,7 @@ public abstract class BaseExample {
      * 在示例执行完毕后调用
      */
     public void cleanup() {
-        if (bot != null) {
-            log.info("清理示例资源: {}", exampleName);
-        }
+        log.info("清理示例资源: {}", exampleName);
     }
 
     /**
@@ -62,22 +60,6 @@ public abstract class BaseExample {
      */
     public String getExampleName() {
         return exampleName;
-    }
-
-    /**
-     * 设置机器人实例
-     * @param bot 机器人实例
-     */
-    public void setBot(AbstractPlatformBot bot) {
-        this.bot = bot;
-    }
-
-    /**
-     * 获取机器人实例
-     * @return 机器人实例
-     */
-    public AbstractPlatformBot getBot() {
-        return bot;
     }
 }
 

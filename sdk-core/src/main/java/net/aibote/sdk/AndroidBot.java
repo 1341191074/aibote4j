@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class AndroidBot extends AbstractPlatformBot {
+public class AndroidBot extends AbstractPlatformBot {
     /**
      * 截图保存<br />
      * 截图保存在客户端本地了

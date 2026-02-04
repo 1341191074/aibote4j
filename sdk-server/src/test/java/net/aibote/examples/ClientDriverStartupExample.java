@@ -6,20 +6,20 @@ import java.io.IOException;
 
 public class ClientDriverStartupExample {
     public static void main(String[] args) {
-        String serverIp = "";
-        String serverPort = "0";
-        String browserName = "chrome";
-        String debugPort = "0"; // 可以手动指定
-        String userDataDir = null;
-        String browserPath = null;
-        String argument = null;
-        String webDriverPath = null;
+//        String serverIp = "";
+//        String serverPort = "0";
+//        String browserName = "chrome";
+//        String debugPort = "0"; // 可以手动指定
+//        String userDataDir = null;
+//        String browserPath = null;
+//        String argument = null;
+//        String webDriverPath = null;
+//
+//        startWebClientDriver(serverIp, serverPort, browserName, browserPath, debugPort, argument, userDataDir, webDriverPath);
 
-        startWebClientDriver(serverIp, serverPort, browserName, browserPath, debugPort, argument, userDataDir, webDriverPath);
-
-        String winDriverPath = "";
-        String winServerIp = "";
-        String winServerPort = "";
+        String winDriverPath = "E:\\Aibote\\";
+        String winServerIp = "127.0.0.1";
+        String winServerPort = "16999";
         startWinClientDriver(winDriverPath, winServerIp, winServerPort);
     }
 
@@ -55,9 +55,9 @@ public class ClientDriverStartupExample {
                 command = driverPath + command;
             }
             command += " " + serverIp + " " + serverPort;
-            //log.info(command);
+            System.out.println(command);
             Process process = Runtime.getRuntime().exec(command);
-            //log.info("启动driver");
+            System.out.println("启动driver");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
