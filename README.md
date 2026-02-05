@@ -1,6 +1,6 @@
 # Aibote4J - Java 跨平台 RPA 框架
 
-[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Java Version](https://img.shields.io/badge/java-21%2B-orange.svg)](https://www.oracle.com/java/)
 [![Maven](https://img.shields.io/badge/maven-3.8%2B-red.svg)](https://maven.apache.org/)
 
@@ -227,7 +227,7 @@ A: 查看 [常见问题](docs/05-%E6%95%85%E9%9A%9C%E6%8E%92%E9%99%A4/01-%E5%B8%
 
 ## 📄 许可证
 
-本项目采用 [MIT 许可证](LICENSE)，详见 LICENSE 文件。
+本项目采用 [Apache License 2.0](LICENSE) 许可证，详见 LICENSE 文件。
 
 ## 📞 联系方式
 
