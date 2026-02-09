@@ -6,6 +6,9 @@ Web 自动化功能通过 [WebBot](file:///F:/workspace/github/aibote4j/sdk-core
 
 ### 创建 Web 机器人
 
+> ⚠️ **重要提醒**：使用前必须先启动服务端！
+> 详细启动顺序说明请参考：[启动顺序说明](../01-入门指南/04-启动顺序说明.md)
+
 ```java
 import net.aibote.sdk.WebBot;
 import net.aibote.sdk.factory.BotFactory;
@@ -16,11 +19,34 @@ WebBot webBot = BotFactory.builder()
     .build();
 ```
 
-### 启动浏览器
+### 启动浏览器客户端
 
 ```java
-// 启动 Chrome 浏览器
-webBot.startChrome("path/to/chromedriver", "path/to/profile");
+// 首先需要启动 WebDriver 客户端（参考 ClientDriverStartupExample）
+// 注意：这应该在创建 WebBot 实例之前执行
+
+// 方式1：启动 Web 客户端驱动
+ClientDriverStartupExample.startWebClientDriver(
+    "127.0.0.1",     // serverIp
+    "16998",         // serverPort  
+    "chrome",        // browserName
+    null,             // browserPath (可选)
+    "0",             // debugPort (0表示自动分配)
+    null,             // argument (可选)
+    null,             // userDataDir (可选)
+    null              // webDriverPath (可选)
+);
+
+// 方式2：或者使用更简洁的方式
+String serverIp = "127.0.0.1";
+String serverPort = "16998";
+String browserName = "chrome";
+ClientDriverStartupExample.startWebClientDriver(serverIp, serverPort, browserName, null, "0", null, null, null);
+
+// 然后创建 WebBot 实例并连接
+WebBot webBot = BotFactory.builder()
+    .withBotType(BotFactory.BotType.WEB)
+    .build();
 
 // 导航到网页
 webBot.navigate("https://www.example.com");
@@ -273,6 +299,108 @@ webBot.setImplicitTimeout(10000, 500); // 等待 10 秒，心跳间隔 500 毫�
 ```
 
 ## 🧪 实际应用示例
+
+### 完整的 Web 自动化流程示例
+
+```java
+import net.aibote.examples.ClientDriverStartupExample;
+import net.aibote.sdk.WebBot;
+import net.aibote.sdk.factory.BotFactory;
+
+public class WebAutomationExample {
+    
+    public static void main(String[] args) {
+        WebBot webBot = null;
+        try {
+            // 1. 启动 WebDriver 客户端
+            System.out.println("启动 WebDriver 客户端...");
+            ClientDriverStartupExample.startWebClientDriver(
+                "127.0.0.1",    // serverIp
+                "16998",        // serverPort
+                "chrome",       // browserName
+                null,           // browserPath
+                "0",            // debugPort
+                null,           // argument
+                null,           // userDataDir
+                null            // webDriverPath
+            );
+            
+            // 等待客户端启动
+            Thread.sleep(2000);
+            
+            // 2. 创建 WebBot 实例
+            System.out.println("创建 WebBot 实例...");
+            webBot = BotFactory.builder()
+                .withBotType(BotFactory.BotType.WEB)
+                .build();
+            
+            // 3. 执行自动化操作
+            performWebAutomation(webBot);
+            
+        } catch (Exception e) {
+            System.err.println("Web 自动化执行失败: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            // 4. 清理资源
+            cleanup(webBot);
+        }
+    }
+    
+    private static void performWebAutomation(WebBot bot) {
+        try {
+            System.out.println("开始执行 Web 自动化...");
+            
+            // 导航到目标网站
+            bot.navigate("https://httpbin.org/forms/post");
+            System.out.println("已导航到表单页面");
+            
+            // 填写表单
+            bot.setElementValue("//input[@name='custname']", "张三");
+            bot.setElementValue("//input[@name='custtel']", "13800138000");
+            bot.setElementValue("//input[@name='custemail']", "zhangsan@example.com");
+            
+            // 选择单选按钮
+            bot.clickElement("//input[@id='sizeLarge']");
+            
+            // 选择复选框
+            bot.clickElement("//input[@name='topping' and @value='bacon']");
+            bot.clickElement("//input[@name='topping' and @value='cheese']");
+            
+            // 填写备注
+            bot.setElementValue("//textarea[@name='comments']", "这是一个测试订单");
+            
+            // 提交表单
+            bot.clickElement("//input[@value='Submit']");
+            
+            System.out.println("表单提交完成");
+            
+            // 等待结果页面加载
+            Thread.sleep(3000);
+            
+            // 截图保存结果
+            String screenshot = bot.takeScreenshot();
+            System.out.println("页面截图已获取，长度: " + screenshot.length());
+            
+        } catch (Exception e) {
+            System.err.println("执行自动化操作时出错: " + e.getMessage());
+        }
+    }
+    
+    private static void cleanup(WebBot bot) {
+        if (bot != null) {
+            try {
+                System.out.println("清理资源...");
+                bot.closeBrowser();
+                bot.closeDriver();
+                bot.disconnect();
+                System.out.println("资源清理完成");
+            } catch (Exception e) {
+                System.err.println("清理资源时出错: " + e.getMessage());
+            }
+        }
+    }
+}
+```
 
 ### 登录自动化示例
 

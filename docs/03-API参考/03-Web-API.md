@@ -8,19 +8,37 @@
 
 ## 浏览器操作 API
 
-### startChrome
-启动 Chrome
+> ⚠️ **重要提醒**：Web自动化需要先启动服务端和WebDriver客户端！
+> 详细启动顺序说明请参考：[启动顺序说明](../01-入门指南/04-启动顺序说明.md)
+
+### navigate
+页面导航
 
 **方法签名：**
 ```java
-public boolean startChrome(String chromeDriver, String profilePath)
+public boolean navigate(String url)
 ```
 
 **参数：**
-- `chromeDriver` - ChromeDriver 路径
-- `profilePath` - 配置文件路径
+- `url` - 要导航的 URL
 
-**返回值：** 启动成功返回 true
+**返回值：** 导航成功返回 true
+
+**使用示例：**
+```java
+// 需要先通过任务引擎启动服务端
+TaskEngine.getInstance().registerTask("web-task", task);
+Application.main(new String[]{}); // 启动服务端
+
+// 客户端需要启动WebDriver.exe连接服务端16998端口
+// ClientDriverStartupExample.startWebClientDriver("127.0.0.1", "16998", "chrome", ...);
+
+// 然后才能使用WebBot进行操作
+WebBot webBot = BotFactory.builder()
+    .withBotType(BotFactory.BotType.WEB)
+    .build();
+webBot.navigate("https://www.example.com");
+```
 
 ### navigate
 页面导航
