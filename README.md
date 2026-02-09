@@ -71,6 +71,10 @@ mvn clean compile -DskipTests
 
 ### 3️⃣ 首个自动化任务（5分钟）
 
+> ⚠️ **重要提醒**：严格按照 **先服务端后客户端** 的顺序启动
+>
+> 详细启动顺序说明请查看 [启动顺序说明](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/04-%E5%90%AF%E5%8A%A8%E9%A1%BA%E5%BA%8F%E8%AF%B4%E6%98%8E.md)
+
 #### 使用任务引擎（推荐方式）
 
 ```java
@@ -80,7 +84,7 @@ import net.aibote.task.impl.NotepadAutomationTask;
 
 public class FirstAutomationTask {
     public static void main(String[] args) {
-        // 注册任务
+        // 1. 注册任务
         NotepadAutomationTask task = NotepadAutomationTask.builder()
             .taskName("我的第一个任务")
             .scriptName("First-Task")
@@ -89,9 +93,24 @@ public class FirstAutomationTask {
         
         String taskId = TaskEngine.getInstance().registerTask("first-task", task);
         
-        // 启动服务端应用
-        // 客户端连接后会自动执行注册的任务
+        // 2. 启动服务端应用（第一步）
+        System.out.println("正在启动服务端，等待客户端连接...");
         Application.main(args);
+        
+        // 3. 客户端需要在另一个进程启动（第二步）
+        // 客户端连接后会自动执行注册的任务
+    }
+}
+
+// 客户端启动示例（另存为ClientStarter.java）
+class ClientStarter {
+    public static void main(String[] args) {
+        // 等待服务端启动完成
+        try { Thread.sleep(3000); } catch (InterruptedException e) {}
+        
+        // 启动Windows客户端
+        net.aibote.examples.ClientDriverStartupExample
+            .startWinClientDriver("E:\\Aibote\\", "127.0.0.1", "16999");
     }
 }
 ```
@@ -106,6 +125,7 @@ public class FirstAutomationTask {
 - [项目介绍](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/01-%E9%A1%B9%E7%9B%AE%E4%BB%8B%E7%BB%8D.md) - 项目概述和核心特性
 - [环境安装](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/02-%E7%8E%AF%E5%A2%83%E5%AE%89%E8%A3%85.md) - 环境配置和项目编译
 - [快速开始](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/03-%E5%BF%AB%E9%80%9F%E5%BC%80%E5%A7%8B.md) - 5分钟上手教程
+- [启动顺序说明](docs/01-%E5%85%A5%E9%97%A8%E6%8C%87%E5%8D%97/04-%E5%90%AF%E5%8A%A8%E9%A1%BA%E5%BA%8F%E8%AF%B4%E6%98%8E.md) - ⭐ 重要！正确启动顺序详解
 
 ### 📙 使用指南 ([docs/02-使用指南](docs/02-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97))
 - [基础概念](docs/02-%E4%BD%BF%E7%94%A8%E6%8C%87%E5%8D%97/01-%E5%9F%BA%E7%A1%80%E6%A6%82%E5%BF%B5.md) - 核心概念和架构

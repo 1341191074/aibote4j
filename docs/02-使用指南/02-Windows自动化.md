@@ -6,6 +6,9 @@ Windows 自动化功能通过 [WinBot](file:///F:/workspace/github/aibote4j/sdk-
 
 ### 创建 Windows 机器人
 
+> ⚠️ **重要提醒**：使用前必须先启动服务端！
+> 详细启动顺序说明请参考：[启动顺序说明](../01-入门指南/04-启动顺序说明.md)
+
 ```java
 import net.aibote.sdk.WinBot;
 import net.aibote.sdk.factory.BotFactory;
@@ -26,7 +29,10 @@ NotepadAutomationTask task = NotepadAutomationTask.builder()
     .build();
 
 TaskEngine.getInstance().registerTask("windows-task", task);
-Application.main(new String[]{});
+Application.main(new String[]{}); // 启动服务端（第一步）
+
+// 客户端需要在另一个进程启动WindowsDriver.exe（第二步）
+// ClientDriverStartupExample.startWinClientDriver("path", "127.0.0.1", "16999");
 ```
 
 ## 🖥️ 窗口操作

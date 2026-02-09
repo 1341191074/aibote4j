@@ -2,6 +2,9 @@
 
 本章详细介绍 Windows 自动化相关的 API。
 
+> ⚠️ **重要提醒**：使用前必须先启动服务端！
+> 详细启动顺序说明请参考：[启动顺序说明](../01-入门指南/04-启动顺序说明.md)
+
 ## WinBot 类
 
 [WinBot](file:///F:/workspace/github/aibote4j/sdk-core/src/main/java/net/aibote/sdk/WinBot.java) 是 Windows 平台自动化的主要类。
